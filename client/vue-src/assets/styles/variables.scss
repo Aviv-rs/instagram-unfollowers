@@ -1,146 +1,133 @@
-// Color palette
 :root {
-  --main-0: #FFFFFF;
-  --main-1: #FFF8FA;
-  --main-2: #FFEEF3;
-  --main-3: #FFD8E4;
-  --main-4: #FFB8CC;
-  --main-5: #FF8CAA;
-  --main-6: #FF5A84;
-  --main-7: #FF3366;
+  // Color Variables
+  --main-0: #ffffff;
+  --main-1: #f8f9fa;
+  --main-2: #e9ecef;
+  --main-3: #dee2e6;
+  --main-4: #ced4da;
+  --main-5: #6c5ce7;
+  --main-6: #5c4ad3;
+  --main-7: #4834b4;
   
-  --error: #e74c3c;
-  --success: #2ecc71;
-  --warning: #f39c12;
-  --info: #3498db;
+  // Text Colors
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --text-inverted: #ffffff;
   
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
+  // Status Colors
+  --success: #22c55e;
+  --warning: #eab308;
+  --error: #ef4444;
+  --info: #3b82f6;
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  // Spacing Variables
+  --spacing-xs: 0.25rem;   // 4px
+  --spacing-sm: 0.5rem;    // 8px
+  --spacing-md: 1rem;      // 16px
+  --spacing-lg: 1.5rem;    // 24px
+  --spacing-xl: 2rem;      // 32px
+  --spacing-2xl: 3rem;     // 48px
+  --spacing-3xl: 4rem;     // 64px
   
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
+  // Font Sizes
+  --font-size-xs: 0.75rem;  // 12px
+  --font-size-sm: 0.875rem; // 14px
+  --font-size-md: 1rem;     // 16px
+  --font-size-lg: 1.125rem; // 18px
+  --font-size-xl: 1.25rem;  // 20px
+  --font-size-2xl: 1.5rem;  // 24px
+  --font-size-3xl: 1.875rem; // 30px
+  --font-size-4xl: 2.25rem;  // 36px
+  --font-size-5xl: 3rem;     // 48px
   
-  --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 1rem;
+  // Border Radius
+  --border-radius-sm: 0.25rem; // 4px
+  --border-radius-md: 0.5rem;  // 8px
+  --border-radius-lg: 0.75rem; // 12px
+  --border-radius-xl: 1rem;    // 16px
   --border-radius-full: 9999px;
   
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  // Typography
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  // Misc
+  --container-max-width: 1200px;
+  --container-padding: var(--spacing-md);
+  --transition-duration: 0.2s;
 }
 
-// Breakpoints
-$breakpoint-sm: 640px;
-$breakpoint-md: 768px;
-$breakpoint-lg: 1024px;
-$breakpoint-xl: 1280px;
-$breakpoint-2xl: 1536px;
+// Dark theme variables
+.dark-theme {
+  --main-0: #1a1a1a;
+  --main-1: #252525;
+  --main-2: #333333;
+  --main-3: #444444;
+  --main-4: #555555;
+  --main-5: #6c5ce7;
+  --main-6: #5c4ad3;
+  --main-7: #8075e5;
+  
+  --text-primary: #f8f9fa;
+  --text-secondary: #e9ecef;
+  --text-tertiary: #dee2e6;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
 
 // Mixins
-@mixin respond-to($breakpoint) {
-  @if $breakpoint == sm {
-    @media (min-width: $breakpoint-sm) { @content; }
-  } @else if $breakpoint == md {
-    @media (min-width: $breakpoint-md) { @content; }
-  } @else if $breakpoint == lg {
-    @media (min-width: $breakpoint-lg) { @content; }
-  } @else if $breakpoint == xl {
-    @media (min-width: $breakpoint-xl) { @content; }
-  } @else if $breakpoint == 2xl {
-    @media (min-width: $breakpoint-2xl) { @content; }
-  }
-}
-
 @mixin flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-@mixin flex-column {
+@mixin flex-between {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
-@mixin flex-row {
-  display: flex;
-  flex-direction: row;
+@mixin container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
 }
 
-@mixin card {
-  background-color: var(--main-0);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-md);
-  padding: var(--spacing-lg);
-}
-
-@mixin gradient-text {
-  background: linear-gradient(to right, var(--main-6), var(--main-7));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@mixin button-primary {
-  background: linear-gradient(to right, var(--main-6), var(--main-7));
-  color: white;
-  border: none;
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-  
-  &:active {
-    transform: translateY(1px);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+// Media query mixins
+@mixin mobile {
+  @media (max-width: 480px) {
+    @content;
   }
 }
 
-@mixin button-secondary {
-  background-color: var(--main-2);
-  color: var(--main-7);
-  border: 1px solid var(--main-3);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: var(--main-3);
+@mixin tablet {
+  @media (max-width: 768px) {
+    @content;
   }
-  
-  &:active {
-    transform: translateY(1px);
+}
+
+@mixin desktop {
+  @media (max-width: 1024px) {
+    @content;
   }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+}
+
+@mixin large-desktop {
+  @media (max-width: 1280px) {
+    @content;
   }
 }

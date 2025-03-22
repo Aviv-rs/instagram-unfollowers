@@ -1,42 +1,38 @@
 <template>
   <div class="app">
-    <NavBar />
-    <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+    <Navbar />
+    <main>
+      <router-view />
     </main>
-    <FooterSection />
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import NavBar from './components/NavBar.vue'
-import FooterSection from './components/FooterSection.vue'
+import { onMounted } from 'vue'
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
+
+onMounted(() => {
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (prefersDarkScheme) {
+    document.body.classList.add('dark-theme')
+  }
+})
 </script>
 
 <style lang="scss">
+@import './assets/styles/reset.scss';
+@import './assets/styles/variables.scss';
+@import './assets/styles/global.scss';
+
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-.main-content {
+main {
   flex: 1;
-}
-
-// Transition animations
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
