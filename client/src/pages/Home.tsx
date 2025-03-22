@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import FileUploadSection from "@/components/FileUploadSection";
+import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import { InstagramData, Unfollower, FileUploadState } from "@/lib/types";
 import ResultsSection from "@/components/ResultsSection";
@@ -86,6 +87,8 @@ export default function Home() {
             setActiveTab={setActiveTab}
           />
         )}
+        
+        <FAQSection />
       </main>
       <Footer />
     </div>
