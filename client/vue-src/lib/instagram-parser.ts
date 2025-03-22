@@ -1,118 +1,152 @@
-import type { InstagramData, InstagramUser, Unfollower, ParsedInstagramData } from '@/types/instagram'
+import { 
+  InstagramData, 
+  InstagramUser, 
+  Unfollower, 
+  ParsedInstagramData,
+  InstagramRelationshipEntry 
+} from '../types/instagram'
 
 /**
- * Parses Instagram data from the JSON file
- * @param fileContent The content of the JSON file
+ * Parses Instagram data from separate followers and following JSON files
+ * @param followersContent The content of the followers JSON file
+ * @param followingContent The content of the following JSON file
  * @returns Processed Instagram data
  */
-export async function parseInstagramData(fileContent: string): Promise<ParsedInstagramData> {
+export async function parseInstagramData(followersContent: string, followingContent: string): Promise<ParsedInstagramData> {
   try {
     // Parse the JSON content
-    const jsonData = JSON.parse(fileContent)
+    const followersData = JSON.parse(followersContent)
+    const followingData = JSON.parse(followingContent)
     
-    // Check if the file has the expected structure
-    if (!jsonData.relationships_followers || !jsonData.relationships_following) {
-      throw new Error('Invalid file format. Please make sure you uploaded the followers_and_following.json file.')
+    // Extract follower and following data based on the structure
+    let followers: InstagramRelationshipEntry[] = []
+    let following: InstagramRelationshipEntry[] = []
+    
+    // Extract followers
+    if (followersData.relationships_followers) {
+      followers = followersData.relationships_followers
+    } else if (Array.isArray(followersData)) {
+      followers = followersData
     }
     
-    // Extract followers and following lists
-    const followers = parseUsersList(jsonData.relationships_followers || [])
-    const following = parseUsersList(jsonData.relationships_following || [])
+    // Extract following
+    if (followingData.relationships_following) {
+      following = followingData.relationships_following
+    } else if (Array.isArray(followingData)) {
+      following = followingData
+    }
     
-    // Create lookup map for quick access
-    const followerMap = new Map<string, InstagramUser>()
-    followers.forEach(user => followerMap.set(user.username, user))
-    
-    const followingMap = new Map<string, InstagramUser>()
-    following.forEach(user => followingMap.set(user.username, user))
-    
-    // Find users who don't follow back
-    const notFollowingBack: Unfollower[] = following
-      .filter(user => !followerMap.has(user.username))
-      .map(user => ({
-        ...user,
-        unfollowedTime: 'Never followed you',
-        followDuration: 'N/A'
-      }))
-    
-    // Find unfollowers (users who previously followed but don't anymore)
-    // Note: Since we don't have historical data, we'll generate random times for demo
-    const unfollowers: Unfollower[] = generateMockUnfollowers(10)
+    // Format the data into our structure
+    const parsedFollowers = parseUsersList(followers)
+    const parsedFollowing = parseUsersList(following)
     
     const instagramData: InstagramData = {
-      followersCount: followers.length,
-      followingCount: following.length,
-      followers,
-      following
+      followersCount: parsedFollowers.length,
+      followingCount: parsedFollowing.length,
+      followers: parsedFollowers,
+      following: parsedFollowing
     }
+    
+    // Calculate users who don't follow you back (people you follow but who don't follow you)
+    const notFollowingBack = parsedFollowing
+      .filter(followingUser => 
+        !parsedFollowers.some(follower => follower.username === followingUser.username)
+      )
+      .map(user => convertToUnfollower(user))
+    
+    // In a real app with previous data exports, we could determine real unfollowers
+    // by comparing historical followers with current followers
+    // For now, we'll use the timestamp to determine which followers are most recent
+    // and pretend older ones might have unfollowed (for demonstration purposes)
+    const potentialUnfollowers = parsedFollowers
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)) // Sort by timestamp, newest first
+      .slice(Math.max(parsedFollowers.length - 5, 0)) // Get last 5 followers (or all if less than 5)
+      .map(user => convertToUnfollower(user))
     
     return {
       data: instagramData,
-      unfollowers,
+      unfollowers: potentialUnfollowers,
       notFollowingBack
     }
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new Error('Invalid JSON format. Please upload a valid Instagram data file.')
-    }
-    throw error
+    console.error('Error parsing Instagram data:', error)
+    throw new Error('Failed to parse Instagram data. Please check the file format.')
   }
 }
 
 /**
- * Parses a list of Instagram users from the JSON data
+ * Parses a list of Instagram users from the relationships data
  */
-function parseUsersList(users: any[]): InstagramUser[] {
-  return users.map(user => ({
-    username: user.string_list_data?.[0]?.value || '',
-    fullName: user.string_list_data?.[0]?.href?.split('/').filter(Boolean).pop() || '',
-    profilePicUrl: user.string_list_data?.[0]?.timestamp ? undefined : undefined
-  })).filter(user => user.username)
+function parseUsersList(relationships: InstagramRelationshipEntry[]): InstagramUser[] {
+  return relationships
+    .filter(entry => entry.string_list_data && entry.string_list_data.length > 0)
+    .map(entry => {
+      const userData = entry.string_list_data[0]
+      
+      return {
+        username: userData.value,
+        fullName: userData.full_name,
+        profilePicUrl: userData.profile_picture,
+        timestamp: userData.timestamp
+      }
+    })
+    .filter(user => user.username) // Filter out any users with empty usernames
 }
 
 /**
- * Generates a random time string for demonstration purposes
+ * Converts an InstagramUser to an Unfollower by adding additional fields
  */
-function generateRandomTime(): string {
-  const timeUnits = ['days', 'weeks', 'months']
-  const timeUnit = timeUnits[Math.floor(Math.random() * timeUnits.length)]
-  const timeValue = Math.floor(Math.random() * 10) + 1
-  
-  return `${timeValue} ${timeUnit} ago`
+function convertToUnfollower(user: InstagramUser): Unfollower {
+  return {
+    ...user,
+    unfollowedTime: formatTimestamp(user.timestamp),
+    followDuration: calculateFollowDuration(user.timestamp)
+  }
 }
 
 /**
- * Generates a random follow duration string for demonstration purposes
+ * Formats a timestamp into a readable date string
  */
-function generateRandomDuration(): string {
-  const durationUnits = ['days', 'weeks', 'months', 'years']
-  const durationUnit = durationUnits[Math.floor(Math.random() * durationUnits.length)]
-  const durationValue = Math.floor(Math.random() * 12) + 1
+function formatTimestamp(timestamp?: number): string {
+  if (!timestamp) {
+    return 'Unknown date'
+  }
   
-  return `${durationValue} ${durationUnit}`
-}
-
-/**
- * Generates mock unfollowers for demonstration
- * This is only used when we don't have historical data to actually determine who unfollowed
- */
-function generateMockUnfollowers(count: number): Unfollower[] {
-  const names = [
-    'alicia_smith', 'john_doe92', 'travel_enthusiast', 
-    'photo_lover', 'fitness_guru', 'tech_geek', 
-    'fashion_icon', 'food_blogger', 'music_fan',
-    'art_appreciator', 'book_worm', 'nature_explorer'
-  ]
+  // Instagram timestamps are in seconds, not milliseconds
+  const date = new Date(timestamp * 1000)
   
-  return Array.from({ length: count }).map((_, i) => {
-    const randomIndex = Math.floor(Math.random() * names.length)
-    const username = names[randomIndex] + (Math.floor(Math.random() * 1000))
-    
-    return {
-      username,
-      fullName: username.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-      unfollowedTime: generateRandomTime(),
-      followDuration: generateRandomDuration()
-    }
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   })
+}
+
+/**
+ * Calculates how long the user was followed based on timestamp
+ */
+function calculateFollowDuration(timestamp?: number): string {
+  if (!timestamp) {
+    return 'Unknown duration'
+  }
+  
+  const now = new Date()
+  const followDate = new Date(timestamp * 1000)
+  const diffTime = Math.abs(now.getTime() - followDate.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays < 1) {
+    return 'Less than a day'
+  } else if (diffDays < 7) {
+    return `${diffDays} days`
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7)
+    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30)
+    return `${months} ${months === 1 ? 'month' : 'months'}`
+  } else {
+    const years = Math.floor(diffDays / 365)
+    return `${years} ${years === 1 ? 'year' : 'years'}`
+  }
 }

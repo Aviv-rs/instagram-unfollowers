@@ -1,44 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
-// Base configuration
-const baseUrl = import.meta.env.BASE_URL || '/'
+// Base URL
+const base = import.meta.env.BASE_URL || '/'
 
-// Routes configuration
-const routes = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
     component: HomeView,
-    meta: { title: 'Instagram Unfollowers Tracker' }
+    meta: {
+      title: 'Instagram Unfollower Tracker'
+    }
   },
   {
+    // 404 page
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('../views/NotFoundView.vue'),
-    meta: { title: 'Page Not Found' }
+    meta: {
+      title: 'Page Not Found'
+    }
   }
 ]
 
-// Router instance
 const router = createRouter({
-  history: createWebHistory(baseUrl),
+  history: createWebHistory(base),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
-      return { top: 0 }
     }
+    
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth'
+      }
+    }
+    
+    return { top: 0 }
   }
 })
 
-// Update page title
+// Update document title based on route meta
 router.beforeEach((to, from, next) => {
-  const title = to.meta.title
-  if (title) {
-    document.title = `${title} - Unfollower Tracker`
-  }
+  document.title = to.meta.title as string || 'Instagram Unfollower Tracker'
   next()
 })
 

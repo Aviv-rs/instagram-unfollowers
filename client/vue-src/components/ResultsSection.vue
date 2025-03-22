@@ -5,65 +5,114 @@
         <span class="text-gradient">Your Instagram Insights</span>
       </h2>
       
-      <div class="stats-cards">
+      <div class="stats-overview">
         <div class="stat-card">
-          <h3 class="stat-number">{{ instagramData.followersCount }}</h3>
-          <p class="stat-label">Followers</p>
+          <div class="stat-value">{{ instagramData.followersCount }}</div>
+          <div class="stat-label">Followers</div>
         </div>
         <div class="stat-card">
-          <h3 class="stat-number">{{ instagramData.followingCount }}</h3>
-          <p class="stat-label">Following</p>
+          <div class="stat-value">{{ instagramData.followingCount }}</div>
+          <div class="stat-label">Following</div>
         </div>
         <div class="stat-card">
-          <h3 class="stat-number">{{ unfollowers.length }}</h3>
-          <p class="stat-label">Unfollowers</p>
+          <div class="stat-value">{{ unfollowers.length }}</div>
+          <div class="stat-label">Unfollowers</div>
         </div>
         <div class="stat-card">
-          <h3 class="stat-number">{{ notFollowingBack.length }}</h3>
-          <p class="stat-label">Not Following Back</p>
+          <div class="stat-value">{{ notFollowingBack.length }}</div>
+          <div class="stat-label">Not Following Back</div>
         </div>
       </div>
       
-      <div class="tabs">
-        <button 
-          class="tab" 
-          :class="{ 'active': activeTab === 'unfollowers' }"
-          @click="setActiveTab('unfollowers')"
-        >
-          Unfollowers
-        </button>
-        <button 
-          class="tab" 
-          :class="{ 'active': activeTab === 'notFollowingBack' }"
-          @click="setActiveTab('notFollowingBack')"
-        >
-          Not Following Back
-        </button>
-      </div>
-      
-      <div class="user-cards" v-if="activeTab === 'unfollowers'">
-        <template v-if="unfollowers.length > 0">
-          <UnfollowerCard 
-            v-for="user in unfollowers" 
-            :key="user.username" 
-            :user="user" 
-          />
-        </template>
-        <div v-else class="empty-state">
-          <p>No unfollowers found.</p>
+      <div class="results-tabs">
+        <div class="results-tabs-header">
+          <button 
+            class="tab-button" 
+            :class="{ 'active': activeTab === 'unfollowers' }"
+            @click="$emit('setActiveTab', 'unfollowers')"
+          >
+            Unfollowers
+          </button>
+          <button 
+            class="tab-button"
+            :class="{ 'active': activeTab === 'notFollowingBack' }"
+            @click="$emit('setActiveTab', 'notFollowingBack')"
+          >
+            Not Following Back
+          </button>
+          <button 
+            class="tab-button"
+            :class="{ 'active': activeTab === 'newFollowers' }"
+            @click="$emit('setActiveTab', 'newFollowers')"
+          >
+            New Followers
+          </button>
         </div>
-      </div>
-      
-      <div class="user-cards" v-if="activeTab === 'notFollowingBack'">
-        <template v-if="notFollowingBack.length > 0">
-          <UnfollowerCard 
-            v-for="user in notFollowingBack" 
-            :key="user.username" 
-            :user="user" 
-          />
-        </template>
-        <div v-else class="empty-state">
-          <p>Everyone you follow is following you back!</p>
+        
+        <div class="results-tabs-content">
+          <!-- Unfollowers Tab -->
+          <div v-if="activeTab === 'unfollowers'" class="tab-content">
+            <div v-if="unfollowers.length > 0" class="unfollowers-grid">
+              <UnfollowerCard 
+                v-for="user in unfollowers" 
+                :key="user.username" 
+                :user="user" 
+              />
+            </div>
+            <div v-else class="empty-state">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <h3 class="empty-title">No Unfollowers Found</h3>
+              <p class="empty-description">
+                Great news! It looks like no one has unfollowed you recently.
+              </p>
+            </div>
+          </div>
+          
+          <!-- Not Following Back Tab -->
+          <div v-if="activeTab === 'notFollowingBack'" class="tab-content">
+            <div v-if="notFollowingBack.length > 0" class="unfollowers-grid">
+              <UnfollowerCard 
+                v-for="user in notFollowingBack" 
+                :key="user.username" 
+                :user="user" 
+              />
+            </div>
+            <div v-else class="empty-state">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </div>
+              <h3 class="empty-title">No Users Found</h3>
+              <p class="empty-description">
+                Great news! Everyone you follow is following you back.
+              </p>
+            </div>
+          </div>
+          
+          <!-- New Followers Tab -->
+          <div v-if="activeTab === 'newFollowers'" class="tab-content">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </div>
+              <h3 class="empty-title">New Followers</h3>
+              <p class="empty-description">
+                To see new followers, you'll need to upload a previous data export to compare with your current one.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -71,136 +120,161 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
-import UnfollowerCard from './UnfollowerCard.vue'
+import UnfollowerCard from '@/components/UnfollowerCard.vue'
 import type { InstagramData, Unfollower } from '@/types/instagram'
 
-const props = defineProps<{
+defineProps<{
   instagramData: InstagramData
   unfollowers: Unfollower[]
   notFollowingBack: Unfollower[]
-  activeTab: "unfollowers" | "notFollowingBack" | "newFollowers"
+  activeTab: 'unfollowers' | 'notFollowingBack' | 'newFollowers'
 }>()
 
-const emit = defineEmits<{
-  setActiveTab: [tab: "unfollowers" | "notFollowingBack" | "newFollowers"]
+defineEmits<{
+  (e: 'setActiveTab', tab: 'unfollowers' | 'notFollowingBack' | 'newFollowers'): void
 }>()
-
-const setActiveTab = (tab: "unfollowers" | "notFollowingBack" | "newFollowers") => {
-  emit('setActiveTab', tab)
-}
 </script>
 
 <style lang="scss">
 .results-section {
-  padding: var(--spacing-2xl) 0;
+  padding: var(--spacing-3xl) 0;
+  background-color: var(--main-1);
 }
 
-.stats-cards {
+.stats-overview {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
   
-  @media (max-width: $breakpoint-md) {
+  @include tablet {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  @media (max-width: $breakpoint-sm) {
+  @include mobile {
     grid-template-columns: 1fr;
   }
 }
 
 .stat-card {
   background-color: var(--main-0);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
   text-align: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   
   &:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
   }
 }
 
-.stat-number {
-  font-size: var(--font-size-3xl);
+.stat-value {
+  font-size: var(--font-size-4xl);
   font-weight: 700;
+  color: var(--main-5);
   margin-bottom: var(--spacing-xs);
-  background: linear-gradient(to right, var(--main-6), var(--main-7));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .stat-label {
   font-size: var(--font-size-md);
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.tabs {
+.results-tabs {
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.results-tabs-header {
   display: flex;
-  justify-content: center;
-  margin-bottom: var(--spacing-xl);
-  border-bottom: 1px solid var(--main-3);
+  border-bottom: 1px solid var(--main-2);
+  overflow-x: auto;
+  
+  @include mobile {
+    flex-wrap: wrap;
+  }
 }
 
-.tab {
+.tab-button {
   padding: var(--spacing-md) var(--spacing-lg);
   font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-secondary);
-  background: none;
+  background-color: transparent;
   border: none;
   cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex: 1;
+  text-align: center;
   
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(to right, var(--main-6), var(--main-7));
-    transform: scaleX(0);
-    transition: transform 0.2s ease;
+  &:hover {
+    color: var(--main-7);
   }
   
   &.active {
     color: var(--main-7);
-    
-    &::after {
-      transform: scaleX(1);
-    }
+    border-bottom-color: var(--main-7);
   }
   
-  &:hover {
-    color: var(--main-6);
+  @include mobile {
+    flex: 1 0 auto;
+    min-width: 33.333%;
   }
 }
 
-.user-cards {
+.results-tabs-content {
+  padding: var(--spacing-xl);
+}
+
+.tab-content {
+  min-height: 300px;
+}
+
+.unfollowers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
   
-  @media (max-width: $breakpoint-sm) {
+  @include desktop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include mobile {
     grid-template-columns: 1fr;
   }
 }
 
 .empty-state {
-  grid-column: 1 / -1;
-  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  background-color: var(--main-1);
-  border-radius: var(--border-radius-md);
+  min-height: 300px;
+  padding: var(--spacing-xl);
+}
+
+.empty-icon {
+  color: var(--main-3);
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-description {
+  font-size: var(--font-size-md);
   color: var(--text-secondary);
-  font-size: var(--font-size-lg);
-  margin: var(--spacing-xl) 0;
+  max-width: 400px;
 }
 </style>

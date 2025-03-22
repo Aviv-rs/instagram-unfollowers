@@ -1,89 +1,161 @@
 <template>
   <div class="home">
     <HeroSection />
+    
     <FileUploadSection 
+      id="upload-section"
       :fileUploadState="fileUploadState"
       :error="error"
+      :followersUploaded="!!followersFile"
+      :followingUploaded="!!followingFile"
       @fileUpload="handleFileUpload"
-      @reset="resetUpload"
+      @reset="handleReset"
     />
-    <ResultsSection 
-      v-if="parsedData"
-      :instagramData="parsedData.data"
-      :unfollowers="parsedData.unfollowers"
-      :notFollowingBack="parsedData.notFollowingBack"
+    
+    <ResultsSection
+      v-if="fileUploadState === 'complete'"
+      :instagramData="instagramData"
+      :unfollowers="unfollowers"
+      :notFollowingBack="notFollowingBack"
       :activeTab="activeTab"
       @setActiveTab="setActiveTab"
     />
+    
     <FAQSection />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, computed, watch } from 'vue'
 import HeroSection from '@/components/HeroSection.vue'
 import FileUploadSection from '@/components/FileUploadSection.vue'
 import ResultsSection from '@/components/ResultsSection.vue'
 import FAQSection from '@/components/FAQSection.vue'
 import { parseInstagramData } from '@/lib/instagram-parser'
-import type { FileUploadState, ParsedInstagramData } from '@/types/instagram'
+import type { FileUploadState, InstagramData, Unfollower, UploadFileType } from '@/types/instagram'
 
-// State
+// State management
 const fileUploadState = ref<FileUploadState>('idle')
 const error = ref<string | null>(null)
-const parsedData = ref<ParsedInstagramData | null>(null)
-const activeTab = ref<"unfollowers" | "notFollowingBack" | "newFollowers">("unfollowers")
+const activeTab = ref<'unfollowers' | 'notFollowingBack' | 'newFollowers'>('unfollowers')
 
-// Methods
-const handleFileUpload = async (files: File[]) => {
-  if (files.length === 0) return
+// File storage
+const followersFile = ref<File | null>(null)
+const followingFile = ref<File | null>(null)
 
+// Instagram data
+const instagramData = ref<InstagramData>({
+  followersCount: 0,
+  followingCount: 0,
+  followers: [],
+  following: []
+})
+const unfollowers = ref<Unfollower[]>([])
+const notFollowingBack = ref<Unfollower[]>([])
+
+// Watch for both files to be uploaded
+watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile]) => {
+  if (newFollowersFile && newFollowingFile) {
+    await processFiles()
+  }
+})
+
+// File upload handler
+const handleFileUpload = async (file: File, fileType: UploadFileType) => {
+  if (!file) return
+  
   try {
-    const file = files[0]
     fileUploadState.value = 'uploading'
+    error.value = null
     
-    const fileContent = await readFileAsText(file)
+    if (fileType === 'followers') {
+      followersFile.value = file
+    } else {
+      followingFile.value = file
+    }
     
-    fileUploadState.value = 'processing'
-    // Process the data
-    const data = await parseInstagramData(fileContent)
-    parsedData.value = data
+    // If we have both files, process them
+    if (followersFile.value && followingFile.value) {
+      await processFiles()
+    }
     
-    fileUploadState.value = 'complete'
-  } catch (err: any) {
+  } catch (err) {
+    console.error('Error uploading file:', err)
     fileUploadState.value = 'error'
-    error.value = err.message || 'Failed to process file. Please make sure you selected the right JSON file.'
+    error.value = 'An unexpected error occurred. Please try again.'
   }
 }
 
-const resetUpload = () => {
-  fileUploadState.value = 'idle'
-  error.value = null
-  parsedData.value = null
+// Process both files when ready
+const processFiles = async () => {
+  if (!followersFile.value || !followingFile.value) return
+  
+  try {
+    fileUploadState.value = 'processing'
+    
+    // Read followers file
+    const followersContent = await readFileAsText(followersFile.value)
+    
+    // Read following file
+    const followingContent = await readFileAsText(followingFile.value)
+    
+    // Parse the Instagram data
+    const parsedData = await parseInstagramData(followersContent, followingContent)
+    
+    // Update state with parsed data
+    instagramData.value = parsedData.data
+    unfollowers.value = parsedData.unfollowers
+    notFollowingBack.value = parsedData.notFollowingBack
+    
+    fileUploadState.value = 'complete'
+  } catch (err) {
+    console.error('Error processing Instagram data:', err)
+    fileUploadState.value = 'error'
+    error.value = 'Failed to process Instagram data. Please make sure you uploaded the correct JSON files.'
+  }
 }
 
-const setActiveTab = (tab: "unfollowers" | "notFollowingBack" | "newFollowers") => {
-  activeTab.value = tab
-}
-
-// Helper function to read file content
+// Helper function to read file as text
 const readFileAsText = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => {
-      resolve(reader.result as string)
+    
+    reader.onload = (e) => {
+      resolve(e.target?.result as string)
     }
+    
     reader.onerror = () => {
-      reject(new Error('Error reading file'))
+      reject(new Error('Failed to read the file.'))
     }
+    
     reader.readAsText(file)
   })
+}
+
+// Reset handler
+const handleReset = () => {
+  fileUploadState.value = 'idle'
+  error.value = null
+  followersFile.value = null
+  followingFile.value = null
+  instagramData.value = {
+    followersCount: 0,
+    followingCount: 0,
+    followers: [],
+    following: []
+  }
+  unfollowers.value = []
+  notFollowingBack.value = []
+}
+
+// Tab handler
+const setActiveTab = (tab: 'unfollowers' | 'notFollowingBack' | 'newFollowers') => {
+  activeTab.value = tab
 }
 </script>
 
 <style lang="scss">
 .home {
-  @include flex-column;
-  gap: var(--spacing-2xl);
+  min-height: 100vh;
 }
 </style>

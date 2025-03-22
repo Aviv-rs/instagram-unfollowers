@@ -1,96 +1,182 @@
 <template>
-  <section id="upload-section" class="upload-section">
+  <section id="upload-section" class="file-upload-section">
     <div class="container">
-      <h2 class="section-title text-center">
-        <span class="text-gradient">Upload Your Instagram Data</span>
-      </h2>
-      <p class="section-description text-center">
-        We process your data file locally in your browser. Your information is never sent to our servers.
-      </p>
-      
-      <div class="upload-container">
-        <!-- File Upload Area -->
-        <div v-if="fileUploadState === 'idle'" class="dropzone-container">
+      <div class="file-upload-container">
+        <h2 class="section-title text-center">
+          <span class="text-gradient">Upload Your Instagram Data</span>
+        </h2>
+        
+        <p class="file-upload-description text-center">
+          Upload both your followers and following Instagram data files (JSON format) to analyze your relationships.
+          All processing happens in your browser - your data never leaves your device.
+        </p>
+        
+        <div v-if="fileUploadState === 'idle'" class="file-upload-grid">
+          <!-- Followers File Upload -->
           <div 
-            class="dropzone"
-            :class="{ 'dropzone-active': isDragActive }"
-            @dragenter="handleDragEnter"
-            @dragover.prevent="handleDragOver"
-            @dragleave="handleDragLeave"
-            @drop.prevent="handleDrop"
-            @click="openFileDialog"
+            class="file-upload-area"
+            :class="{ 
+              'drag-active': isDraggingFollowers,
+              'file-uploaded': followersUploaded
+            }"
+            @dragover.prevent="handleDragOver('followers')"
+            @dragleave.prevent="handleDragLeave('followers')"
+            @drop.prevent="handleFileDrop($event, 'followers')"
           >
-            <input 
-              ref="fileInput"
-              type="file" 
-              accept=".json"
-              class="file-input" 
-              @change="handleFileChange"
-            />
-            <div class="dropzone-content">
-              <div class="dropzone-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="file-upload-content">
+              <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followersUploaded }">
+                <svg v-if="!followersUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
                   <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
               </div>
-              <h3 class="dropzone-title">
-                {{ isDragActive ? 'Drop your file here' : 'Drag & drop your Instagram data file here' }}
+              <h3 class="file-upload-title">
+                {{ followersUploaded ? 'Followers File Uploaded' : 'Upload Followers File' }}
               </h3>
-              <p class="dropzone-description">
-                or <span class="dropzone-link">browse your files</span>
+              <p class="file-upload-subtitle">
+                {{ followersUploaded ? 'File successfully uploaded' : 'Drag & drop or click to browse' }}
               </p>
-              <p class="dropzone-hint">
-                Please upload the followers_and_following.json file from your Instagram data export
+              <input 
+                type="file" 
+                ref="followersFileInput" 
+                class="file-input" 
+                accept=".json" 
+                @change="handleFileInputChange($event, 'followers')"
+              />
+              <button 
+                class="btn" 
+                :class="followersUploaded ? 'btn-secondary' : 'btn-primary'"
+                @click="triggerFileInput('followers')"
+              >
+                {{ followersUploaded ? 'Change File' : 'Browse Files' }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Following File Upload -->
+          <div 
+            class="file-upload-area"
+            :class="{ 
+              'drag-active': isDraggingFollowing,
+              'file-uploaded': followingUploaded 
+            }"
+            @dragover.prevent="handleDragOver('following')"
+            @dragleave.prevent="handleDragLeave('following')"
+            @drop.prevent="handleFileDrop($event, 'following')"
+          >
+            <div class="file-upload-content">
+              <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followingUploaded }">
+                <svg v-if="!followingUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <h3 class="file-upload-title">
+                {{ followingUploaded ? 'Following File Uploaded' : 'Upload Following File' }}
+              </h3>
+              <p class="file-upload-subtitle">
+                {{ followingUploaded ? 'File successfully uploaded' : 'Drag & drop or click to browse' }}
               </p>
+              <input 
+                type="file" 
+                ref="followingFileInput" 
+                class="file-input" 
+                accept=".json" 
+                @change="handleFileInputChange($event, 'following')"
+              />
+              <button 
+                class="btn" 
+                :class="followingUploaded ? 'btn-secondary' : 'btn-primary'"
+                @click="triggerFileInput('following')"
+              >
+                {{ followingUploaded ? 'Change File' : 'Browse Files' }}
+              </button>
             </div>
           </div>
         </div>
         
-        <!-- Loading State -->
-        <div v-else-if="fileUploadState === 'uploading' || fileUploadState === 'processing'" class="upload-status">
-          <div class="upload-status-icon">
-            <svg class="spinner" viewBox="0 0 50 50">
-              <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-            </svg>
-          </div>
-          <h3 class="upload-status-title">
-            {{ fileUploadState === 'uploading' ? 'Uploading...' : 'Processing...' }}
-          </h3>
-          <p class="upload-status-description">
-            {{ fileUploadState === 'uploading' ? 'Reading your data file' : 'Analyzing your follower relationships' }}
+        <!-- Upload Status Message -->
+        <div v-if="fileUploadState === 'idle'" class="upload-status">
+          <p v-if="followersUploaded && followingUploaded" class="upload-status-success">
+            Both files uploaded successfully! Processing your data...
           </p>
+          <p v-else-if="followersUploaded || followingUploaded" class="upload-status-partial">
+            <span v-if="followersUploaded">Followers file uploaded. </span>
+            <span v-if="followingUploaded">Following file uploaded. </span>
+            Please upload the remaining file to continue.
+          </p>
+          <p v-else class="upload-status-info">
+            Please upload both your followers and following data files to analyze your Instagram relationships.
+          </p>
+          
+          <button v-if="followersUploaded || followingUploaded" class="btn btn-secondary" @click="resetUpload">
+            Reset
+          </button>
         </div>
         
-        <!-- Error State -->
-        <div v-else-if="fileUploadState === 'error'" class="upload-status upload-error">
-          <div class="upload-status-icon">
+        <!-- Loading state -->
+        <div v-else-if="fileUploadState === 'uploading' || fileUploadState === 'processing'" class="file-upload-loading">
+          <div class="spinner"></div>
+          <p v-if="fileUploadState === 'uploading'" class="loading-text">Uploading your files...</p>
+          <p v-else class="loading-text">Processing your Instagram data...</p>
+        </div>
+        
+        <!-- Error state -->
+        <div v-else-if="fileUploadState === 'error'" class="file-upload-error">
+          <div class="error-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
           </div>
-          <h3 class="upload-status-title">Error Processing File</h3>
-          <p class="upload-status-description">{{ error }}</p>
-          <button class="btn btn-secondary mt-md" @click="resetUpload">Try Again</button>
+          <h3 class="error-title">Something went wrong</h3>
+          <p class="error-message">{{ error || 'An unknown error occurred. Please try again.' }}</p>
+          <button class="btn btn-primary" @click="resetUpload">
+            Try Again
+          </button>
         </div>
         
-        <!-- Success State -->
-        <div v-else-if="fileUploadState === 'complete'" class="upload-status upload-success">
-          <div class="upload-status-icon">
+        <!-- Success state -->
+        <div v-else-if="fileUploadState === 'complete'" class="file-upload-success">
+          <div class="success-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
           </div>
-          <h3 class="upload-status-title">Analysis Complete</h3>
-          <p class="upload-status-description">Your data has been processed successfully.</p>
-          <div class="upload-status-actions">
-            <a href="#results-section" class="btn btn-primary mt-md">View Results</a>
-            <button class="btn btn-secondary mt-md ml-md" @click="resetUpload">Upload Another File</button>
-          </div>
+          <h3 class="success-title">Data Processed Successfully</h3>
+          <p class="success-message">
+            Your Instagram data has been processed. Scroll down to see your results!
+          </p>
+          <button class="btn btn-secondary" @click="resetUpload">
+            Upload Different Files
+          </button>
+        </div>
+        
+        <!-- Instructions Area -->
+        <div class="instructions-area">
+          <h3 class="instructions-title">How to get your Instagram data</h3>
+          <ol class="instructions-list">
+            <li>Log in to your Instagram account</li>
+            <li>Go to your profile and tap the menu icon in the top right</li>
+            <li>Select "Your activity"</li>
+            <li>Scroll down and tap "Download your information"</li>
+            <li>Select "JSON" as the format and request the download</li>
+            <li>Instagram will email you when your data is ready to download</li>
+            <li>Extract the ZIP file and find the "followers_1" and "following" JSON files in the "connections" folder</li>
+            <li>Upload both files separately in the corresponding upload areas above</li>
+          </ol>
         </div>
       </div>
     </div>
@@ -98,245 +184,339 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits } from 'vue'
-import type { FileUploadState } from '@/types/instagram'
+import { ref } from 'vue'
+import type { FileUploadState, UploadFileType } from '@/types/instagram'
 
-const props = defineProps<{
+// Props
+defineProps<{
   fileUploadState: FileUploadState
   error: string | null
+  followersUploaded: boolean
+  followingUploaded: boolean
 }>()
 
+// Emits
 const emit = defineEmits<{
-  fileUpload: [files: File[]]
-  reset: []
+  (e: 'fileUpload', file: File, fileType: UploadFileType): void
+  (e: 'reset'): void
 }>()
 
-// File input reference
-const fileInput = ref<HTMLInputElement | null>(null)
+// State
+const isDraggingFollowers = ref(false)
+const isDraggingFollowing = ref(false)
+const followersFileInput = ref<HTMLInputElement | null>(null)
+const followingFileInput = ref<HTMLInputElement | null>(null)
 
-// Drag and drop state
-const isDragActive = ref(false)
-
-// Drag and drop handlers
-const handleDragEnter = (e: DragEvent) => {
-  e.preventDefault()
-  isDragActive.value = true
+// Methods
+const handleDragOver = (fileType: UploadFileType) => {
+  if (fileType === 'followers') {
+    isDraggingFollowers.value = true
+  } else {
+    isDraggingFollowing.value = true
+  }
 }
 
-const handleDragOver = (e: DragEvent) => {
-  e.preventDefault()
-  isDragActive.value = true
+const handleDragLeave = (fileType: UploadFileType) => {
+  if (fileType === 'followers') {
+    isDraggingFollowers.value = false
+  } else {
+    isDraggingFollowing.value = false
+  }
 }
 
-const handleDragLeave = () => {
-  isDragActive.value = false
-}
-
-const handleDrop = (e: DragEvent) => {
-  e.preventDefault()
-  isDragActive.value = false
+const handleFileDrop = (event: DragEvent, fileType: UploadFileType) => {
+  if (fileType === 'followers') {
+    isDraggingFollowers.value = false
+  } else {
+    isDraggingFollowing.value = false
+  }
   
-  if (e.dataTransfer?.files) {
-    const files = Array.from(e.dataTransfer.files)
-    if (files.length > 0) {
-      emit('fileUpload', files)
-    }
+  if (!event.dataTransfer?.files.length) return
+  
+  const file = event.dataTransfer.files[0]
+  validateAndEmitFile(file, fileType)
+}
+
+const triggerFileInput = (fileType: UploadFileType) => {
+  if (fileType === 'followers') {
+    followersFileInput.value?.click()
+  } else {
+    followingFileInput.value?.click()
   }
 }
 
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    const files = Array.from(target.files)
-    emit('fileUpload', files)
-  }
+const handleFileInputChange = (event: Event, fileType: UploadFileType) => {
+  const target = event.target as HTMLInputElement
+  
+  if (!target.files?.length) return
+  
+  const file = target.files[0]
+  validateAndEmitFile(file, fileType)
 }
 
-const openFileDialog = () => {
-  if (fileInput.value) {
-    fileInput.value.click()
+const validateAndEmitFile = (file: File, fileType: UploadFileType) => {
+  // Check if it's a JSON file
+  if (!file.name.endsWith('.json')) {
+    alert('Please upload a valid JSON file')
+    return
   }
+  
+  emit('fileUpload', file, fileType)
 }
 
 const resetUpload = () => {
   emit('reset')
-  if (fileInput.value) {
-    fileInput.value.value = ''
+  
+  // Reset file inputs
+  if (followersFileInput.value) {
+    followersFileInput.value.value = ''
+  }
+  
+  if (followingFileInput.value) {
+    followingFileInput.value.value = ''
   }
 }
 </script>
 
 <style lang="scss">
-.upload-section {
-  padding: var(--spacing-2xl) 0;
+.file-upload-section {
+  padding: var(--spacing-3xl) 0;
+  background-color: var(--main-1);
 }
 
-.section-title {
-  font-size: var(--font-size-3xl);
-  margin-bottom: var(--spacing-md);
-}
-
-.section-description {
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-  max-width: 700px;
-  margin: 0 auto var(--spacing-xl);
-}
-
-.upload-container {
-  max-width: 700px;
+.file-upload-container {
+  max-width: 800px;
   margin: 0 auto;
 }
 
-.dropzone-container {
-  width: 100%;
+.file-upload-description {
+  margin-bottom: var(--spacing-xl);
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  
+  @include mobile {
+    font-size: var(--font-size-md);
+  }
 }
 
-.dropzone {
+.file-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.file-upload-area {
   border: 2px dashed var(--main-4);
   border-radius: var(--border-radius-lg);
-  background-color: var(--main-1);
   padding: var(--spacing-xl);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--main-0);
+  transition: all 0.3s ease;
   cursor: pointer;
-  transition: all 0.2s ease;
   
   &:hover {
-    border-color: var(--main-6);
-    background-color: var(--main-2);
+    border-color: var(--main-5);
   }
   
-  &.dropzone-active {
-    border-color: var(--main-7);
-    background-color: var(--main-2);
+  &.drag-active {
+    background-color: rgba(var(--main-5-rgb), 0.05);
+    border-color: var(--main-5);
+  }
+  
+  &.file-uploaded {
+    border-style: solid;
+    border-color: var(--success);
+    background-color: rgba(var(--success-rgb), 0.05);
   }
 }
 
-.file-input {
-  display: none;
-}
-
-.dropzone-content {
-  @include flex-column;
-  align-items: center;
-}
-
-.dropzone-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: var(--main-2);
-  color: var(--main-7);
-  margin-bottom: var(--spacing-md);
-}
-
-.dropzone-title {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--spacing-sm);
-}
-
-.dropzone-description {
-  font-size: var(--font-size-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.dropzone-link {
-  color: var(--main-7);
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-.dropzone-hint {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-}
-
-.upload-status {
-  @include flex-column;
-  align-items: center;
+.file-upload-content {
   text-align: center;
-  padding: var(--spacing-xl);
-  border-radius: var(--border-radius-lg);
-  background-color: var(--main-0);
-  box-shadow: var(--shadow-md);
 }
 
-.upload-status-icon {
+.file-upload-icon {
+  color: var(--main-5);
   margin-bottom: var(--spacing-md);
   
-  svg {
-    color: var(--main-7);
-  }
-}
-
-.upload-status-title {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--spacing-sm);
-}
-
-.upload-status-description {
-  font-size: var(--font-size-md);
-  color: var(--text-secondary);
-  max-width: 400px;
-  margin-bottom: var(--spacing-md);
-}
-
-.upload-status-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  
-  @media (max-width: $breakpoint-sm) {
-    @include flex-column;
-  }
-}
-
-.upload-error {
-  .upload-status-icon svg {
-    color: var(--error);
-  }
-}
-
-.upload-success {
-  .upload-status-icon svg {
+  &.file-uploaded-icon {
     color: var(--success);
   }
 }
 
-/* Spinner animation */
-.spinner {
-  animation: rotate 2s linear infinite;
-  width: 50px;
-  height: 50px;
+.file-upload-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
   
-  .path {
-    stroke: var(--main-7);
-    stroke-linecap: round;
-    animation: dash 1.5s ease-in-out infinite;
+  @include mobile {
+    font-size: var(--font-size-md);
   }
 }
 
-@keyframes rotate {
-  100% {
-    transform: rotate(360deg);
+.file-upload-subtitle {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Upload status */
+.upload-status {
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-md);
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  
+  p {
+    margin-bottom: var(--spacing-md);
   }
 }
 
-@keyframes dash {
-  0% {
-    stroke-dasharray: 1, 150;
-    stroke-dashoffset: 0;
+.upload-status-success {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.upload-status-partial {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.upload-status-info {
+  color: var(--text-secondary);
+}
+
+/* Loading state */
+.file-upload-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  
+  .spinner {
+    margin-bottom: var(--spacing-md);
   }
-  50% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -35;
+  
+  .loading-text {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--text-primary);
   }
-  100% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -124;
+}
+
+/* Error state */
+.file-upload-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+  
+  .error-icon {
+    color: var(--error);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .error-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .error-message {
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    max-width: 500px;
+  }
+}
+
+/* Success state */
+.file-upload-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+  
+  .success-icon {
+    color: var(--success);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .success-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .success-message {
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+/* Instructions area */
+.instructions-area {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.instructions-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.instructions-list {
+  padding-left: var(--spacing-lg);
+  
+  li {
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+    list-style-type: decimal;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 </style>
