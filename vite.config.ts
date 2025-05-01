@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  base: '/instagram-unfollowers/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -25,7 +26,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
+    outDir: 'dist',
     emptyOutDir: true,
   },
   server: {
