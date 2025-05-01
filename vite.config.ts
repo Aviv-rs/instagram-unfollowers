@@ -36,6 +36,9 @@ export default defineConfig({
       }
     }
   },
+  json: {
+    stringify: true
+  },
   server: {
     port: 3000,
   },
