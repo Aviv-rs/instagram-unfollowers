@@ -9,7 +9,11 @@ const i18n = createI18n({
   messages: {
     en,
     he
-  }
+  },
+  silentTranslationWarn: true,
+  silentFallbackWarn: true,
+  missingWarn: false,
+  fallbackWarn: false
 })
 
 export default i18n 

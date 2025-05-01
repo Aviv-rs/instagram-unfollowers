@@ -28,6 +28,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'vue-i18n', 'pinia'],
+        }
+      }
+    }
   },
   server: {
     port: 3000,
