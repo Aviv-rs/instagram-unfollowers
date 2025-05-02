@@ -59,7 +59,7 @@
     "success": {
       "title": "Data Processed Successfully",
       "message": "Your Instagram data has been processed. Scroll down to see your results!",
-      "uploadDifferent": "Upload Different Files"
+      "uploadDifferent": "Upload New Data"
     },
     "instructions": {
       "title": "How to get your Instagram data",
@@ -73,10 +73,14 @@
         "Extract the ZIP file and find the \"followers_1\" and \"following\" JSON files in the \"connections\" folder",
         "Upload both files separately in the corresponding upload areas above"
       ]
-    }
+    },
+    "updateMessage": "You can upload new files to update your data and track changes over time. Your previous data will be preserved for comparison."
   },
   "results": {
     "title": "Your Instagram Insights",
+    "search": {
+      "placeholder": "Search by username..."
+    },
     "tabs": {
       "youDontFollowBack": "You Don't Follow Back",
       "notFollowingBack": "Not Following You Back",
@@ -86,7 +90,9 @@
       "followers": "Followers",
       "following": "Following",
       "youDontFollowBack": "You Don't Follow Back",
-      "notFollowingBack": "Not Following You Back"
+      "notFollowingBack": "Not Following You Back",
+      "newFollowers": "New Followers",
+      "newFollowing": "New Following"
     },
     "empty": {
       "youDontFollowBack": {
@@ -99,11 +105,17 @@
       },
       "newFollowers": {
         "title": "New Followers",
-        "description": "To see new followers, you'll need to upload a previous data export to compare with your current one."
+        "description": "No new followers since your last import.",
+        "noPreviousData": "To see new followers, you'll need to upload a previous data export to compare with your current one."
+      },
+      "search": {
+        "title": "No Results Found",
+        "description": "No users match your search criteria. Try a different search term."
       }
     },
     "card": {
       "unfollowed": "Unfollowed:",
+      "dateFollowed": "Followed on:",
       "followedFor": "Followed for:",
       "visitProfile": "Visit Profile",
       "unknownDate": "Unknown date",
@@ -117,6 +129,10 @@
       "months": "{count} months",
       "year": "1 year",
       "years": "{count} years"
+    },
+    "importHistory": {
+      "title": "Import History",
+      "noHistory": "No previous imports found"
     }
   },
   "faq": {
@@ -178,6 +194,11 @@
     "required": "Required",
     "change": "Change File",
     "browse": "Browse Files"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {current} of {total}"
   },
   "about": {
     "title": "About Me",

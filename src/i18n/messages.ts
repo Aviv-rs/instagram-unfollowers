@@ -5,6 +5,3 @@ export const messages = {
   en,
   he
 } 
-
-console.log(en)
-console.log(he)

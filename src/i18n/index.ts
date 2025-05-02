@@ -1,9 +1,6 @@
 import { createI18n } from 'vue-i18n'
 import { messages } from './messages'
 
-// Log messages for debugging
-console.log('Available messages:', messages)
-
 const i18n = createI18n({
   legacy: false,
   locale: 'en',

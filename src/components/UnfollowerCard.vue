@@ -22,7 +22,7 @@
     </div>
     <div class="unfollower-details">
       <div class="unfollower-detail">
-        <span class="unfollower-detail-label">{{ $t('results.card.unfollowed') }}</span>
+        <span class="unfollower-detail-label">{{ $t('results.card.dateFollowed') }}</span>
         <span class="unfollower-detail-value">{{ user.unfollowedTime }}</span>
       </div>
       <div v-if="user.followDuration && user.followDuration !== 'N/A'" class="unfollower-detail">

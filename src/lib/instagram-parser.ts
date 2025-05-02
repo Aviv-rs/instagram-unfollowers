@@ -106,7 +106,7 @@ function convertToUnfollower(user: InstagramUser): Unfollower {
 /**
  * Formats a timestamp into a readable date string
  */
-function formatTimestamp(timestamp?: number): string {
+export function formatTimestamp(timestamp?: number): string {
   if (!timestamp) {
     return i18n.global.t('results.card.unknownDate')
   }
@@ -116,7 +116,6 @@ function formatTimestamp(timestamp?: number): string {
   
   // Ensure we're using the correct locale and format
   const locale = i18n.global.locale.value || 'en'
-  console.log(locale)
   return new Intl.DateTimeFormat(locale, {
     month: 'long',
     day: 'numeric',

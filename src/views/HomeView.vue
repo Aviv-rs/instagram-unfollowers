@@ -18,6 +18,8 @@
       :youDontFollowBack="youDontFollowBack"
       :notFollowingBack="notFollowingBack"
       :activeTab="activeTab"
+      :previousData="previousData"
+      :importHistory="importHistory"
       @setActiveTab="setActiveTab"
     />
     
@@ -27,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import HeroSection from '@/components/HeroSection.vue'
 import FileUploadSection from '@/components/FileUploadSection.vue'
 import ResultsSection from '@/components/ResultsSection.vue'
@@ -55,6 +57,68 @@ const instagramData = ref<InstagramData>({
 const youDontFollowBack = ref<Unfollower[]>([])
 const notFollowingBack = ref<Unfollower[]>([])
 
+// Previous data storage
+const previousData = ref<InstagramData | null>(null)
+const importHistory = ref<Array<{
+  data: InstagramData
+  timestamp: string
+}>>([])
+
+// Save data to localStorage
+const saveToLocalStorage = () => {
+  const newImport = {
+    data: instagramData.value,
+    timestamp: new Date().toISOString()
+  }
+  
+  // Add new import to history
+  importHistory.value.push(newImport)
+  
+  // Save complete history
+  const dataToSave = {
+    importHistory: importHistory.value,
+    currentData: {
+      instagramData: instagramData.value,
+      youDontFollowBack: youDontFollowBack.value,
+      notFollowingBack: notFollowingBack.value
+    }
+  }
+  
+  localStorage.setItem('instagramData', JSON.stringify(dataToSave))
+}
+
+// Load data from localStorage
+const loadFromLocalStorage = () => {
+  const savedData = localStorage.getItem('instagramData')
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData)
+      
+      // Restore import history
+      if (parsedData.importHistory) {
+        importHistory.value = parsedData.importHistory
+      }
+      
+      // Restore current state
+      if (parsedData.currentData) {
+        instagramData.value = parsedData.currentData.instagramData
+        youDontFollowBack.value = parsedData.currentData.youDontFollowBack
+        notFollowingBack.value = parsedData.currentData.notFollowingBack
+        fileUploadState.value = 'complete'
+      }
+      
+      // Set previous data to the last import if available
+      if (importHistory.value.length > 1) {
+        previousData.value = importHistory.value[importHistory.value.length - 2].data
+      }
+      
+      console.log('Successfully loaded saved data from localStorage')
+    } catch (err) {
+      console.error('Error loading saved data:', err)
+    }
+  }
+}
+
 // Watch for both files to be uploaded
 watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile]) => {
   if (newFollowersFile && newFollowingFile) {
@@ -64,9 +128,16 @@ watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile
       
       const parsedData = await parseInstagramData(followersContent, followingContent)
       
+      // Update current data
       instagramData.value = parsedData.data
       youDontFollowBack.value = parsedData.youDontFollowBack
       notFollowingBack.value = parsedData.notFollowingBack
+      
+      // Save the new data to localStorage
+      saveToLocalStorage()
+      
+      // Load and compare with previous data
+      loadFromLocalStorage()
       
       fileUploadState.value = 'complete'
     } catch (err) {
@@ -74,6 +145,11 @@ watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile
       fileUploadState.value = 'error'
     }
   }
+})
+
+// Load saved data when component mounts
+onMounted(() => {
+  loadFromLocalStorage()
 })
 
 // File upload handler
@@ -154,18 +230,14 @@ const readFileAsText = (file: File): Promise<string> => {
 
 // Reset handler
 const handleReset = () => {
+  // Only reset the file upload state and file references
   fileUploadState.value = 'idle'
   error.value = null
   followersFile.value = null
   followingFile.value = null
-  instagramData.value = {
-    followersCount: 0,
-    followingCount: 0,
-    followers: [],
-    following: []
-  }
-  youDontFollowBack.value = []
-  notFollowingBack.value = []
+  
+  // Don't clear the data or localStorage
+  // This allows users to upload new files while keeping the previous data
 }
 
 // Tab handler
