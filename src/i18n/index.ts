@@ -9,7 +9,9 @@ const i18n = createI18n({
   silentTranslationWarn: true,
   silentFallbackWarn: true,
   missingWarn: false,
-  fallbackWarn: false
+  fallbackWarn: false,
+  globalInjection: true,
+  runtimeOnly: false
 })
 
 export default i18n 
