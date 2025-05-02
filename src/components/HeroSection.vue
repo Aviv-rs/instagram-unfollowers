@@ -87,6 +87,7 @@
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+console.log(useI18n().messages.value)
 
 console.log(t('hero.title'))
 </script>
