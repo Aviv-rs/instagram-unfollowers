@@ -14,13 +14,11 @@ const i18n = createI18n({
   missingWarn: false,
   fallbackWarn: false,
   globalInjection: true,
-  runtimeOnly: false
+  runtimeOnly: false,
+  missing: (locale: string, key: string) => {
+    console.warn(`Missing translation: ${key} for locale: ${locale}`)
+    return key
+  }
 })
-
-// Add error handler
-i18n.global.missing = (locale: string, key: string) => {
-  console.warn(`Missing translation: ${key} for locale: ${locale}`)
-  return key
-}
 
 export default i18n 
