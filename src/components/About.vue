@@ -32,10 +32,11 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
 
 const { t } = useI18n()
 
-const socialLinks = [
+const socialLinks = computed(() => [
   {
     name: t('about.socials.instagram'),
     url: 'https://www.instagram.com/aviv_rs/',
@@ -46,7 +47,7 @@ const socialLinks = [
     url: 'https://www.linkedin.com/in/aviv-roas-3b1b55229/',
     icon: 'fab fa-linkedin'
   }
-]
+])
 </script>
 
 <style lang="scss" scoped>

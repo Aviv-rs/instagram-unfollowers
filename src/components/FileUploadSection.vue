@@ -188,9 +188,9 @@
             <button v-if="followersUploaded || followingUploaded" class="btn btn-secondary" @click="resetUpload">
               {{ $t('common.reset') }}
             </button>
-            <button v-if="fileUploadState === 'idle'" class="btn btn-primary" @click="$emit('viewResults')">
+            <!-- <button v-if="fileUploadState === 'idle'" class="btn btn-primary" @click="$emit('viewResults')">
               {{ $t('upload.returnToResults') }}
-            </button>
+            </button> -->
           </div>
         </div>
         
@@ -707,6 +707,7 @@ const resetUpload = () => {
   gap: var(--spacing-md);
   justify-content: center;
   margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
 }
 
 .instructions-header {

@@ -1,9 +1,12 @@
 import { createI18n } from 'vue-i18n'
 import { messages } from './messages'
 
+// Get saved language preference or default to 'en'
+const savedLocale = localStorage.getItem('language') || 'en'
+
 const i18n = createI18n({
   legacy: false,
-  locale: 'en',
+  locale: savedLocale,
   fallbackLocale: 'en',
   messages,
   silentTranslationWarn: true,
@@ -17,5 +20,9 @@ const i18n = createI18n({
     return key
   }
 })
+
+// Set initial document language and direction
+document.documentElement.lang = savedLocale
+document.documentElement.dir = savedLocale === 'he' ? 'rtl' : 'ltr'
 
 export default i18n 

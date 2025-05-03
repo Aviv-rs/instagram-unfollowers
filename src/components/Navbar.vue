@@ -177,6 +177,7 @@ onUnmounted(() => {
     font-size: var(--font-size-xl);
     font-weight: 700;
     color: var(--text-primary);
+    line-height: 1;
   }
 }
 

@@ -23,11 +23,11 @@
     <div class="unfollower-details">
       <div class="unfollower-detail">
         <span class="unfollower-detail-label">{{ $t('results.card.dateFollowed') }}</span>
-        <span class="unfollower-detail-value">{{ user.unfollowedTime }}</span>
+        <span class="unfollower-detail-value">{{ formattedUnfollowedTime }}</span>
       </div>
       <div v-if="user.followDuration && user.followDuration !== 'N/A'" class="unfollower-detail">
         <span class="unfollower-detail-label">{{ $t('results.card.followedFor') }}</span>
-        <span class="unfollower-detail-value">{{ user.followDuration }}</span>
+        <span class="unfollower-detail-value">{{ formattedFollowDuration }}</span>
       </div>
     </div>
     <div class="unfollower-actions">
@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Unfollower } from '@/types/instagram'
+import { formatTimestamp, calculateFollowDuration } from '@/lib/instagram-parser'
 
 const props = defineProps<{
   user: Unfollower
@@ -58,6 +59,10 @@ const instagramUrl = computed(() => {
 const userInitial = computed(() => {
   return props.user.username.charAt(0).toUpperCase()
 })
+
+// Make the formatted time reactive to locale changes
+const formattedUnfollowedTime = computed(() => formatTimestamp(props.user.timestamp))
+const formattedFollowDuration = computed(() => calculateFollowDuration(props.user.timestamp))
 </script>
 
 <style lang="scss">

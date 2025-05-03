@@ -6,8 +6,8 @@ export interface InstagramUser {
 }
 
 export interface Unfollower extends InstagramUser {
-  unfollowedTime: string;
-  followDuration?: string;
+  unfollowedTime?: number;
+  followDuration?: number;
 }
 
 export interface InstagramData {

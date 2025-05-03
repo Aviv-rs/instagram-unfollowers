@@ -18,17 +18,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
 
 const currentLocale = computed(() => locale.value)
 
+// Load saved language preference on component mount
+onMounted(() => {
+  const savedLocale = localStorage.getItem('language')
+  if (savedLocale) {
+    changeLocale(savedLocale)
+  }
+})
+
 const changeLocale = (newLocale: string) => {
   locale.value = newLocale
   document.documentElement.lang = newLocale
   document.documentElement.dir = newLocale === 'he' ? 'rtl' : 'ltr'
+  localStorage.setItem('language', newLocale)
 }
 </script>
 

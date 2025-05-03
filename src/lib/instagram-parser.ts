@@ -8,6 +8,7 @@ import {
 } from '../types/instagram'
 import i18n from '../i18n'
 import JSZip from 'jszip'
+import { computed } from 'vue'
 
 /**
  * Calculates changes between two sets of users
@@ -162,8 +163,8 @@ function parseUsersList(relationships: InstagramRelationshipEntry[]): InstagramU
 function convertToUnfollower(user: InstagramUser): Unfollower {
   return {
     ...user,
-    unfollowedTime: formatTimestamp(user.timestamp),
-    followDuration: calculateFollowDuration(user.timestamp)
+    unfollowedTime: user.timestamp,
+    followDuration: user.timestamp
   }
 }
 
@@ -178,19 +179,23 @@ export function formatTimestamp(timestamp?: number): string {
   // Instagram timestamps are in seconds, not milliseconds
   const date = new Date(timestamp * 1000)
   
-  // Ensure we're using the correct locale and format
-  const locale = i18n.global.locale.value || 'en'
-  return new Intl.DateTimeFormat(locale, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  }).format(date)
+  // Create a computed property for the formatted date that updates when locale changes
+  const formattedDate = computed(() => {
+    const locale = i18n.global.locale.value || 'en'
+    return new Intl.DateTimeFormat(locale, {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date)
+  })
+  
+  return formattedDate.value
 }
 
 /**
  * Calculates how long the user was followed based on timestamp
  */
-function calculateFollowDuration(timestamp?: number): string {
+export function calculateFollowDuration(timestamp?: number): string {
   if (!timestamp) {
     return i18n.global.t('results.card.unknownDuration');
   }
