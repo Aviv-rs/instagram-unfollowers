@@ -5,7 +5,7 @@
   },
   "nav": {
     "home": "Home",
-    "upload": "Upload Data",
+    "upload": "Check Unfollowers",
     "faq": "FAQ",
     "about": "About"
   },
@@ -32,6 +32,13 @@
   "upload": {
     "title": "Upload Your Instagram Data",
     "description": "Upload both your followers and following Instagram data files (JSON format) to analyze your relationships. All processing happens in your browser - your data never leaves your device.",
+    "zip": {
+      "title": "Upload Instagram Data ZIP",
+      "uploaded": "ZIP File Uploaded",
+      "success": "File successfully uploaded",
+      "placeholder": "Drag & drop or click to browse your Instagram data ZIP file"
+    },
+    "or": "OR",
     "followers": {
       "title": "Upload Followers File",
       "uploaded": "Followers File Uploaded",
@@ -59,7 +66,14 @@
     "success": {
       "title": "Data Processed Successfully",
       "message": "Your Instagram data has been processed. Scroll down to see your results!",
-      "uploadDifferent": "Upload New Data"
+      "uploadDifferent": "Upload New Data",
+      "viewResults": "View Results"
+    },
+    "resetData": "Reset All Data",
+    "resetConfirmation": {
+      "title": "Reset All Data",
+      "message": "Are you sure you want to reset all data? This will delete all your import history and current data. This action cannot be undone.",
+      "confirm": "Yes, Reset All Data"
     },
     "instructions": {
       "title": "How to get your Instagram data",
@@ -74,7 +88,8 @@
         "Upload both files separately in the corresponding upload areas above"
       ]
     },
-    "updateMessage": "You can upload new files to update your data and track changes over time. Your previous data will be preserved for comparison."
+    "updateMessage": "Import your Instagram data regularly to track changes over time. Each import will be saved in your history, allowing you to see how your follower and following counts change.",
+    "returnToResults": "Return to Results"
   },
   "results": {
     "title": "Your Instagram Insights",
@@ -132,7 +147,13 @@
     },
     "importHistory": {
       "title": "Import History",
-      "noHistory": "No previous imports found"
+      "changes": "Changes: {followers} followers, {following} following",
+      "gainedFollowers": "Gained {count} followers",
+      "lostFollowers": "Lost {count} followers",
+      "gainedFollowing": "Gained {count} following",
+      "lostFollowing": "Lost {count} following",
+      "noHistory": "No import history available",
+      "description": "Track your Instagram growth over time by importing your data regularly"
     }
   },
   "faq": {

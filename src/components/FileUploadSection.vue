@@ -23,20 +23,20 @@
         </p>
         
         <div v-if="fileUploadState === 'idle'" class="file-upload-grid">
-          <!-- Followers File Upload -->
+          <!-- ZIP File Upload -->
           <div 
-            class="file-upload-area"
+            class="file-upload-area zip-upload"
             :class="{ 
-              'drag-active': isDraggingFollowers,
-              'file-uploaded': followersUploaded
+              'drag-active': isDraggingZip,
+              'file-uploaded': zipUploaded && fileUploadState === 'complete'
             }"
-            @dragover.prevent="handleDragOver('followers')"
-            @dragleave.prevent="handleDragLeave('followers')"
-            @drop.prevent="handleFileDrop($event, 'followers')"
+            @dragover.prevent="handleDragOver('zip')"
+            @dragleave.prevent="handleDragLeave('zip')"
+            @drop.prevent="handleFileDrop($event, 'zip')"
           >
             <div class="file-upload-content">
-              <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followersUploaded }">
-                <svg v-if="!followersUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="file-upload-icon" :class="{ 'file-uploaded-icon': zipUploaded && fileUploadState === 'complete' }">
+                <svg v-if="!zipUploaded || fileUploadState !== 'complete'" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
                   <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -47,71 +47,125 @@
                 </svg>
               </div>
               <h3 class="file-upload-title">
-                {{ followersUploaded ? $t('upload.followers.uploaded') : $t('upload.followers.title') }}
+                {{ zipUploaded && fileUploadState === 'complete' ? $t('upload.zip.uploaded') : $t('upload.zip.title') }}
               </h3>
               <p class="file-upload-subtitle">
-                {{ followersUploaded ? $t('upload.followers.success') : $t('upload.followers.placeholder') }}
+                {{ zipUploaded && fileUploadState === 'complete' ? $t('upload.zip.success') : $t('upload.zip.placeholder') }}
               </p>
               <input 
                 type="file" 
-                ref="followersFileInput" 
+                ref="zipFileInput" 
                 class="file-input" 
-                accept=".json" 
-                @change="handleFileInputChange($event, 'followers')"
+                accept=".zip" 
+                @change="handleFileInputChange($event, 'zip')"
               />
               <button 
                 class="btn" 
-                :class="followersUploaded ? 'btn-secondary' : 'btn-primary'"
-                @click="triggerFileInput('followers')"
+                :class="zipUploaded && fileUploadState === 'complete' ? 'btn-secondary' : 'btn-primary'"
+                @click="triggerFileInput('zip')"
               >
-                {{ followersUploaded ? $t('common.change') : $t('common.browse') }}
+                {{ zipUploaded && fileUploadState === 'complete' ? $t('common.change') : $t('common.browse') }}
               </button>
             </div>
           </div>
           
-          <!-- Following File Upload -->
-          <div 
-            class="file-upload-area"
-            :class="{ 
-              'drag-active': isDraggingFollowing,
-              'file-uploaded': followingUploaded 
-            }"
-            @dragover.prevent="handleDragOver('following')"
-            @dragleave.prevent="handleDragLeave('following')"
-            @drop.prevent="handleFileDrop($event, 'following')"
-          >
-            <div class="file-upload-content">
-              <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followingUploaded }">
-                <svg v-if="!followingUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
+          <!-- OR Separator -->
+          <div class="or-separator">
+            <span>{{ $t('upload.or') }}</span>
+          </div>
+          
+          <!-- Individual File Uploads -->
+          <div class="individual-uploads">
+            <!-- Followers File Upload -->
+            <div 
+              class="file-upload-area"
+              :class="{ 
+                'drag-active': isDraggingFollowers,
+                'file-uploaded': followersUploaded
+              }"
+              @dragover.prevent="handleDragOver('followers')"
+              @dragleave.prevent="handleDragLeave('followers')"
+              @drop.prevent="handleFileDrop($event, 'followers')"
+            >
+              <div class="file-upload-content">
+                <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followersUploaded }">
+                  <svg v-if="!followersUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <h3 class="file-upload-title">
+                  {{ followersUploaded ? $t('upload.followers.uploaded') : $t('upload.followers.title') }}
+                </h3>
+                <p class="file-upload-subtitle">
+                  {{ followersUploaded ? $t('upload.followers.success') : $t('upload.followers.placeholder') }}
+                </p>
+                <input 
+                  type="file" 
+                  ref="followersFileInput" 
+                  class="file-input" 
+                  accept=".json" 
+                  @change="handleFileInputChange($event, 'followers')"
+                />
+                <button 
+                  class="btn" 
+                  :class="followersUploaded ? 'btn-secondary' : 'btn-primary'"
+                  @click="triggerFileInput('followers')"
+                >
+                  {{ followersUploaded ? $t('common.change') : $t('common.browse') }}
+                </button>
               </div>
-              <h3 class="file-upload-title">
-                {{ followingUploaded ? $t('upload.following.uploaded') : $t('upload.following.title') }}
-              </h3>
-              <p class="file-upload-subtitle">
-                {{ followingUploaded ? $t('upload.following.success') : $t('upload.following.placeholder') }}
-              </p>
-              <input 
-                type="file" 
-                ref="followingFileInput" 
-                class="file-input" 
-                accept=".json" 
-                @change="handleFileInputChange($event, 'following')"
-              />
-              <button 
-                class="btn" 
-                :class="followingUploaded ? 'btn-secondary' : 'btn-primary'"
-                @click="triggerFileInput('following')"
-              >
-                {{ followingUploaded ? $t('common.change') : $t('common.browse') }}
-              </button>
+            </div>
+            
+            <!-- Following File Upload -->
+            <div 
+              class="file-upload-area"
+              :class="{ 
+                'drag-active': isDraggingFollowing,
+                'file-uploaded': followingUploaded 
+              }"
+              @dragover.prevent="handleDragOver('following')"
+              @dragleave.prevent="handleDragLeave('following')"
+              @drop.prevent="handleFileDrop($event, 'following')"
+            >
+              <div class="file-upload-content">
+                <div class="file-upload-icon" :class="{ 'file-uploaded-icon': followingUploaded }">
+                  <svg v-if="!followingUploaded" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <h3 class="file-upload-title">
+                  {{ followingUploaded ? $t('upload.following.uploaded') : $t('upload.following.title') }}
+                </h3>
+                <p class="file-upload-subtitle">
+                  {{ followingUploaded ? $t('upload.following.success') : $t('upload.following.placeholder') }}
+                </p>
+                <input 
+                  type="file" 
+                  ref="followingFileInput" 
+                  class="file-input" 
+                  accept=".json" 
+                  @change="handleFileInputChange($event, 'following')"
+                />
+                <button 
+                  class="btn" 
+                  :class="followingUploaded ? 'btn-secondary' : 'btn-primary'"
+                  @click="triggerFileInput('following')"
+                >
+                  {{ followingUploaded ? $t('common.change') : $t('common.browse') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -130,9 +184,14 @@
             {{ $t('upload.status.uploadBoth') }}
           </p>
           
-          <button v-if="followersUploaded || followingUploaded" class="btn btn-secondary" @click="resetUpload">
-            {{ $t('common.reset') }}
-          </button>
+          <div class="upload-actions">
+            <button v-if="followersUploaded || followingUploaded" class="btn btn-secondary" @click="resetUpload">
+              {{ $t('common.reset') }}
+            </button>
+            <button v-if="fileUploadState === 'idle'" class="btn btn-primary" @click="$emit('viewResults')">
+              {{ $t('upload.returnToResults') }}
+            </button>
+          </div>
         </div>
         
         <!-- Loading state -->
@@ -170,19 +229,33 @@
           <p class="success-message">
             {{ $t('upload.success.message') }}
           </p>
-          <button class="btn btn-secondary" @click="resetUpload">
-            {{ $t('upload.success.uploadDifferent') }}
-          </button>
+          <div class="success-actions">
+            <button class="btn btn-secondary" @click="$emit('reset')">
+              {{ $t('upload.success.uploadDifferent') }}
+            </button>
+            <button class="btn btn-primary" @click="$emit('viewResults')">
+              {{ $t('upload.success.viewResults') }}
+            </button>
+          </div>
         </div>
         
         <!-- Instructions Area -->
         <div class="instructions-area">
-          <h3 class="instructions-title">{{ $t('upload.instructions.title') }}</h3>
+          <div class="instructions-header">
+            <h3 class="instructions-title">{{ $t('upload.instructions.title') }}</h3>
+          </div>
           <ol class="instructions-list">
             <li v-for="(step, index) in tm('upload.instructions.steps')" :key="index">
               {{ step }}
             </li>
           </ol>
+          <button 
+            v-if="fileUploadState === 'complete'" 
+            class="btn btn-danger btn-reset" 
+            @click="$emit('resetData')"
+          >
+            {{ $t('upload.resetData') }}
+          </button>
         </div>
       </div>
     </div>
@@ -208,17 +281,24 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'fileUpload', file: File, fileType: UploadFileType): void
   (e: 'reset'): void
+  (e: 'viewResults'): void
+  (e: 'resetData'): void
 }>()
 
 // State
 const isDraggingFollowers = ref(false)
 const isDraggingFollowing = ref(false)
+const isDraggingZip = ref(false)
 const followersFileInput = ref<HTMLInputElement | null>(null)
 const followingFileInput = ref<HTMLInputElement | null>(null)
+const zipFileInput = ref<HTMLInputElement | null>(null)
+const zipUploaded = ref(false)
 
 // Methods
 const handleDragOver = (fileType: UploadFileType) => {
-  if (fileType === 'followers') {
+  if (fileType === 'zip') {
+    isDraggingZip.value = true
+  } else if (fileType === 'followers') {
     isDraggingFollowers.value = true
   } else {
     isDraggingFollowing.value = true
@@ -226,7 +306,9 @@ const handleDragOver = (fileType: UploadFileType) => {
 }
 
 const handleDragLeave = (fileType: UploadFileType) => {
-  if (fileType === 'followers') {
+  if (fileType === 'zip') {
+    isDraggingZip.value = false
+  } else if (fileType === 'followers') {
     isDraggingFollowers.value = false
   } else {
     isDraggingFollowing.value = false
@@ -234,7 +316,9 @@ const handleDragLeave = (fileType: UploadFileType) => {
 }
 
 const handleFileDrop = (event: DragEvent, fileType: UploadFileType) => {
-  if (fileType === 'followers') {
+  if (fileType === 'zip') {
+    isDraggingZip.value = false
+  } else if (fileType === 'followers') {
     isDraggingFollowers.value = false
   } else {
     isDraggingFollowing.value = false
@@ -249,8 +333,10 @@ const handleFileDrop = (event: DragEvent, fileType: UploadFileType) => {
 const triggerFileInput = (fileType: UploadFileType) => {
   if (fileType === 'followers') {
     followersFileInput.value?.click()
-  } else {
+  } else if (fileType === 'following') {
     followingFileInput.value?.click()
+  } else if (fileType === 'zip') {
+    zipFileInput.value?.click()
   }
 }
 
@@ -264,10 +350,17 @@ const handleFileInputChange = (event: Event, fileType: UploadFileType) => {
 }
 
 const validateAndEmitFile = (file: File, fileType: UploadFileType) => {
-  // Check if it's a JSON file
-  if (!file.name.endsWith('.json')) {
-    alert('Please upload a valid JSON file')
-    return
+  if (fileType === 'zip') {
+    if (!file.name.endsWith('.zip')) {
+      alert('Please upload a valid ZIP file')
+      return
+    }
+    zipUploaded.value = true
+  } else {
+    if (!file.name.endsWith('.json')) {
+      alert('Please upload a valid JSON file')
+      return
+    }
   }
   
   emit('fileUpload', file, fileType)
@@ -277,17 +370,22 @@ const resetUpload = () => {
   emit('reset')
   
   // Reset file inputs
+  if (zipFileInput.value) {
+    zipFileInput.value.value = ''
+  }
   if (followersFileInput.value) {
     followersFileInput.value.value = ''
   }
-  
   if (followingFileInput.value) {
     followingFileInput.value.value = ''
   }
+  
+  // Reset upload states
+  zipUploaded.value = false
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .file-upload-section {
   padding: var(--spacing-3xl) 0;
   background-color: var(--main-1);
@@ -541,6 +639,7 @@ const resetUpload = () => {
   background-color: var(--main-1);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--main-3);
+  flex-direction: column;
 }
 
 .update-icon {
@@ -553,5 +652,85 @@ const resetUpload = () => {
   color: var(--text-primary);
   margin: 0;
   text-align: center;
+}
+
+.zip-upload {
+  grid-column: 1 / -1;
+  margin-bottom: var(--spacing-lg);
+}
+
+.or-separator {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin: var(--spacing-md) 0;
+  position: relative;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: var(--main-4);
+  }
+  
+  &::before {
+    left: 0;
+  }
+  
+  &::after {
+    right: 0;
+  }
+  
+  span {
+    background-color: var(--main-1);
+    padding: 0 var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+}
+
+.individual-uploads {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.success-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+}
+
+.instructions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: white;
+  margin: 0 auto;
+  margin-top: var(--spacing-md);
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.upload-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-md);
 }
 </style>

@@ -247,6 +247,20 @@
             <div class="import-stats">
               <span>{{ $t('results.stats.followers') }}: {{ import_.data.followersCount }}</span>
               <span>{{ $t('results.stats.following') }}: {{ import_.data.followingCount }}</span>
+              <span v-if="import_.changes" class="import-changes">
+                <template v-if="import_.changes.gainedFollowers.length > 0">
+                  {{ $t('results.importHistory.gainedFollowers', { count: import_.changes.gainedFollowers.length }) }}
+                </template>
+                <template v-if="import_.changes.lostFollowers.length > 0">
+                  {{ $t('results.importHistory.lostFollowers', { count: import_.changes.lostFollowers.length }) }}
+                </template>
+                <template v-if="import_.changes.gainedFollowing.length > 0">
+                  {{ $t('results.importHistory.gainedFollowing', { count: import_.changes.gainedFollowing.length }) }}
+                </template>
+                <template v-if="import_.changes.lostFollowing.length > 0">
+                  {{ $t('results.importHistory.lostFollowing', { count: import_.changes.lostFollowing.length }) }}
+                </template>
+              </span>
             </div>
           </div>
         </div>
@@ -257,7 +271,7 @@
 
 <script setup lang="ts">
 import UnfollowerCard from '@/components/UnfollowerCard.vue'
-import type { InstagramData, Unfollower } from '@/types/instagram'
+import type { InstagramData, Unfollower, ImportHistoryEntry } from '@/types/instagram'
 import { ref, computed } from 'vue'
 import { formatTimestamp } from '@/lib/instagram-parser'
 import i18n from '@/i18n'
@@ -272,10 +286,7 @@ const props = defineProps<{
   notFollowingBack: Unfollower[]
   activeTab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers'
   previousData?: InstagramData | null
-  importHistory?: Array<{
-    data: InstagramData
-    timestamp: string
-  }>
+  importHistory?: ImportHistoryEntry[]
 }>()
 
 const filteredYouDontFollowBack = computed(() => {
@@ -390,6 +401,7 @@ defineEmits<{
   font-weight: 700;
   color: var(--main-5);
   margin-bottom: var(--spacing-xs);
+  direction: ltr;
 }
 
 .stat-label {
@@ -589,6 +601,11 @@ defineEmits<{
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--main-1);
   border-radius: var(--border-radius-md);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--main-2);
+  }
 }
 
 .import-date {
@@ -601,5 +618,18 @@ defineEmits<{
   gap: var(--spacing-md);
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.import-changes {
+  color: var(--main-7);
+  font-weight: 500;
+  
+  &.positive {
+    color: var(--success);
+  }
+  
+  &.negative {
+    color: var(--error);
+  }
 }
 </style>

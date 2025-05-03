@@ -17,14 +17,28 @@ export interface InstagramData {
   following: InstagramUser[];
 }
 
-export type FileUploadState = 'idle' | 'uploading' | 'processing' | 'complete' | 'error';
+export interface ImportChange {
+  gainedFollowers: InstagramUser[];
+  lostFollowers: InstagramUser[];
+  gainedFollowing: InstagramUser[];
+  lostFollowing: InstagramUser[];
+}
 
-export type UploadFileType = 'followers' | 'following';
+export interface ImportHistoryEntry {
+  data: InstagramData;
+  timestamp: string;
+  changes?: ImportChange;
+}
+
+export type FileUploadState = 'idle' | 'uploading' | 'processing' | 'complete' | 'error'
+
+export type UploadFileType = 'followers' | 'following' | 'zip';
 
 export interface ParsedInstagramData {
   data: InstagramData;
   youDontFollowBack: Unfollower[];
   notFollowingBack: Unfollower[];
+  changes?: ImportChange;
 }
 
 export interface InstagramStringListData {

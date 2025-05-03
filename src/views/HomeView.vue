@@ -10,10 +10,12 @@
       :followingUploaded="!!followingFile"
       @fileUpload="handleFileUpload"
       @reset="handleReset"
+      @viewResults="scrollToResults"
+      @resetData="showResetConfirmation = true"
     />
     
     <ResultsSection
-      v-if="fileUploadState === 'complete'"
+      v-if="fileUploadState === 'complete' || instagramData.followersCount > 0"
       :instagramData="instagramData"
       :youDontFollowBack="youDontFollowBack"
       :notFollowingBack="notFollowingBack"
@@ -25,6 +27,22 @@
     
     <FAQSection />
     <About />
+
+    <!-- Reset Confirmation Dialog -->
+    <div v-if="showResetConfirmation" class="modal-overlay">
+      <div class="modal-content">
+        <h3 class="modal-title">{{ $t('upload.resetConfirmation.title') }}</h3>
+        <p class="modal-message">{{ $t('upload.resetConfirmation.message') }}</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" @click="showResetConfirmation = false">
+            {{ $t('common.cancel') }}
+          </button>
+          <button class="btn btn-danger" @click="resetAllData">
+            {{ $t('upload.resetConfirmation.confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -35,13 +53,14 @@ import FileUploadSection from '@/components/FileUploadSection.vue'
 import ResultsSection from '@/components/ResultsSection.vue'
 import FAQSection from '@/components/FAQSection.vue'
 import About from '@/components/About.vue'
-import { parseInstagramData } from '@/lib/instagram-parser'
-import type { FileUploadState, InstagramData, Unfollower, UploadFileType } from '@/types/instagram'
+import { parseInstagramData, processZipFile } from '@/lib/instagram-parser'
+import type { FileUploadState, InstagramData, Unfollower, UploadFileType, ImportHistoryEntry, ParsedInstagramData } from '@/types/instagram'
 
 // State management
 const fileUploadState = ref<FileUploadState>('idle')
 const error = ref<string | null>(null)
 const activeTab = ref<'youDontFollowBack' | 'notFollowingBack' | 'newFollowers'>('youDontFollowBack')
+const showResetConfirmation = ref(false)
 
 // File storage
 const followersFile = ref<File | null>(null)
@@ -56,23 +75,27 @@ const instagramData = ref<InstagramData>({
 })
 const youDontFollowBack = ref<Unfollower[]>([])
 const notFollowingBack = ref<Unfollower[]>([])
+const lastParsedData = ref<ParsedInstagramData | null>(null)
 
 // Previous data storage
 const previousData = ref<InstagramData | null>(null)
-const importHistory = ref<Array<{
-  data: InstagramData
-  timestamp: string
-}>>([])
+const importHistory = ref<ImportHistoryEntry[]>([])
 
 // Save data to localStorage
 const saveToLocalStorage = () => {
-  const newImport = {
+  const newImport: ImportHistoryEntry = {
     data: instagramData.value,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    changes: lastParsedData.value?.changes
   }
   
   // Add new import to history
   importHistory.value.push(newImport)
+  
+  // Sort history by timestamp (newest first)
+  importHistory.value.sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  )
   
   // Save complete history
   const dataToSave = {
@@ -109,7 +132,7 @@ const loadFromLocalStorage = () => {
       
       // Set previous data to the last import if available
       if (importHistory.value.length > 1) {
-        previousData.value = importHistory.value[importHistory.value.length - 2].data
+        previousData.value = importHistory.value[1].data // Get second most recent import
       }
       
       console.log('Successfully loaded saved data from localStorage')
@@ -126,7 +149,13 @@ watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile
       const followersContent = await readFileAsText(newFollowersFile)
       const followingContent = await readFileAsText(newFollowingFile)
       
-      const parsedData = await parseInstagramData(followersContent, followingContent)
+      // Get the most recent data from history if available
+      const existingData = importHistory.value.length > 0 ? importHistory.value[0].data : undefined
+      
+      const parsedData = await parseInstagramData(followersContent, followingContent, existingData)
+      
+      // Store the parsed data
+      lastParsedData.value = parsedData
       
       // Update current data
       instagramData.value = parsedData.data
@@ -136,8 +165,10 @@ watch([followersFile, followingFile], async ([newFollowersFile, newFollowingFile
       // Save the new data to localStorage
       saveToLocalStorage()
       
-      // Load and compare with previous data
-      loadFromLocalStorage()
+      // Set previous data to the last import if available
+      if (importHistory.value.length > 1) {
+        previousData.value = importHistory.value[1].data
+      }
       
       fileUploadState.value = 'complete'
     } catch (err) {
@@ -160,25 +191,49 @@ const handleFileUpload = async (file: File, fileType: UploadFileType) => {
     fileUploadState.value = 'uploading'
     error.value = null
     
-    if (fileType === 'followers') {
-      followersFile.value = file
-    } else {
-      followingFile.value = file
-    }
-
-    fileUploadState.value = 'idle'
-    
-    // If we have both files, process them
-    if (followersFile.value && followingFile.value) {
-      await processFiles()
+    if (fileType === 'zip') {
+      // Process ZIP file
+      const { followersContent, followingContent } = await processZipFile(file)
+      
+      // Get the most recent data from history if available
+      const existingData = importHistory.value.length > 0 ? importHistory.value[0].data : undefined
+      
+      // Parse the Instagram data
+      const parsedData = await parseInstagramData(followersContent, followingContent, existingData)
+      
+      // Update state with parsed data
+      instagramData.value = parsedData.data
+      notFollowingBack.value = parsedData.notFollowingBack
+      youDontFollowBack.value = parsedData.youDontFollowBack
+      
+      // Save the new data to localStorage
+      saveToLocalStorage()
+      
+      // Set previous data to the last import if available
+      if (importHistory.value.length > 1) {
+        previousData.value = importHistory.value[1].data
+      }
+      
       fileUploadState.value = 'complete'
+    } else {
+      if (fileType === 'followers') {
+        followersFile.value = file
+      } else {
+        followingFile.value = file
+      }
+
+      fileUploadState.value = 'idle'
+      
+      // If we have both files, process them
+      if (followersFile.value && followingFile.value) {
+        await processFiles()
+        fileUploadState.value = 'complete'
+      }
     }
-    
-    
   } catch (err) {
     console.error('Error uploading file:', err)
     fileUploadState.value = 'error'
-    error.value = 'An unexpected error occurred. Please try again.'
+    error.value = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'
   }
 }
 
@@ -195,8 +250,11 @@ const processFiles = async () => {
     // Read following file
     const followingContent = await readFileAsText(followingFile.value)
     
+    // Get the most recent data from history if available
+    const existingData = importHistory.value.length > 0 ? importHistory.value[0].data : undefined
+    
     // Parse the Instagram data
-    const parsedData = await parseInstagramData(followersContent, followingContent)
+    const parsedData = await parseInstagramData(followersContent, followingContent, existingData)
     
     // Update state with parsed data
     instagramData.value = parsedData.data
@@ -244,10 +302,88 @@ const handleReset = () => {
 const setActiveTab = (tab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers') => {
   activeTab.value = tab
 }
+
+// Reset all data
+const resetAllData = () => {
+  // Clear all data
+  instagramData.value = {
+    followersCount: 0,
+    followingCount: 0,
+    followers: [],
+    following: []
+  }
+  youDontFollowBack.value = []
+  notFollowingBack.value = []
+  previousData.value = null
+  importHistory.value = []
+  lastParsedData.value = null
+  
+  // Clear localStorage
+  localStorage.removeItem('instagramData')
+  
+  // Reset file upload state
+  fileUploadState.value = 'idle'
+  error.value = null
+  followersFile.value = null
+  followingFile.value = null
+  
+  // Hide confirmation dialog
+  showResetConfirmation.value = false
+}
+
+// Scroll to results section
+const scrollToResults = () => {
+  const resultsSection = document.getElementById('results-section')
+  if (resultsSection) {
+    resultsSection.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <style lang="scss">
 .home {
   min-height: 100vh;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--main-0);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.modal-message {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  align-items: center;
 }
 </style>
