@@ -60,7 +60,7 @@
           <div class="hero-image-wrapper">
             <div class="hero-image-phone">
               <div class="phone-frame">
-                <div class="phone-screen">
+                <div class="phone-screen" v-if="!$t('hero.explainer_video_link')">
                   <div class="phone-app">
                     <div class="app-header">
                       <div class="app-header-icon"></div>
@@ -72,6 +72,9 @@
                       <div class="app-card"></div>
                     </div>
                   </div>
+                </div>
+                <div class="phone-screen" v-else>
+                  <iframe :src="$t('hero.explainer_video_link')" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
                 </div>
               </div>
             </div>
