@@ -2,12 +2,12 @@ import { createI18n } from 'vue-i18n'
 import { messages } from './messages'
 
 // Get saved language preference or default to 'en'
-const savedLocale = localStorage.getItem('language') || 'en'
+const savedLocale = localStorage.getItem('language') || 'he'
 
 const i18n = createI18n({
   legacy: false,
   locale: savedLocale,
-  fallbackLocale: 'en',
+  fallbackLocale: 'he',
   messages,
   silentTranslationWarn: true,
   silentFallbackWarn: true,
