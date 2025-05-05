@@ -84,6 +84,7 @@ const formattedFollowDuration = computed(() => calculateFollowDuration(props.use
   align-items: center;
   padding: var(--spacing-md);
   border-bottom: 1px solid var(--main-2);
+  gap: var(--spacing-sm);
 }
 
 .unfollower-avatar {
