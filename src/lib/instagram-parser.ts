@@ -245,24 +245,36 @@ export async function processZipFile(zipFile: File): Promise<{ followersContent:
     const zip = new JSZip()
     const zipContent = await zip.loadAsync(zipFile)
     
-    // Find the followers and following files
-    const followersFile = Object.values(zipContent.files).find(file => 
-      file.name.includes('followers_1.json')
-    )
+    // Find all followers files and combine their contents
+    const followersFiles = Object.values(zipContent.files).filter(file => 
+      file.name.includes('followers_') && file.name.endsWith('.json')
+    ).sort((a, b) => a.name.localeCompare(b.name))
     
     const followingFile = Object.values(zipContent.files).find(file => 
       file.name.includes('following.json')
     )
     
-    if (!followersFile || !followingFile) {
+    if (followersFiles.length === 0 || !followingFile) {
       throw new Error('Could not find required JSON files in the ZIP archive')
     }
     
-    // Read the file contents
-    const followersContent = await followersFile.async('string')
+    // Read and combine all followers files
+    const followersContents = await Promise.all(
+      followersFiles.map(file => file.async('string'))
+    )
+    
+    // Combine the followers data
+    const combinedFollowersData = followersContents.map(content => {
+      const data = JSON.parse(content)
+      return data.relationships_followers || data
+    }).flat()
+    
     const followingContent = await followingFile.async('string')
     
-    return { followersContent, followingContent }
+    return { 
+      followersContent: JSON.stringify(combinedFollowersData), 
+      followingContent 
+    }
   } catch (err) {
     console.error('Error processing ZIP file:', err)
     throw new Error('Failed to process ZIP file')
