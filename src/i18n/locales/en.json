@@ -79,14 +79,16 @@
     "instructions": {
       "title": "How to get your Instagram data",
       "steps": [
-        "Log in to your Instagram account",
-        "Go to your profile and tap the menu icon in the top right",
-        "Select \"Your activity\"",
-        "Scroll down and tap \"Download your information\"",
-        "Select \"JSON\" as the format and request the download",
-        "Instagram will email you when your data is ready to download",
-        "Extract the ZIP file and find the \"followers_1\" and \"following\" JSON files in the \"connections\" folder",
-        "Upload both files separately in the corresponding upload areas above"
+        "Log in to your Instagram account.",
+        "Long-press your user icon in the bottom right corner.",
+        "Select \"Accounts Center.\"",
+        "Scroll down to \"Your information and permissions.\"",
+        "Select \"Download your data.\"",
+        "Download the file in JSON format.",
+        "Choose the date range as \"All time.\"",
+        "Make sure the download format is set to JSON.",
+        "Instagram will send you an email when your data is ready to download.",
+        "Upload the file in the appropriate upload area above."
       ]
     },
     "updateMessage": "Import your Instagram data regularly to track changes over time. Each import will be saved in your history, allowing you to see how your follower and following counts change.",
@@ -100,7 +102,8 @@
     "tabs": {
       "youDontFollowBack": "You Don't Follow Back",
       "notFollowingBack": "Not Following You Back",
-      "newFollowers": "New Followers"
+      "newFollowers": "New Followers",
+      "newUnfollowers": "New Unfollowers"
     },
     "stats": {
       "followers": "Followers",
@@ -127,6 +130,10 @@
       "search": {
         "title": "No Results Found",
         "description": "No users match your search criteria. Try a different search term."
+      },
+      "newUnfollowers": {
+        "title": "New Unfollowers",
+        "description": "No new unfollowers since your last import."
       }
     },
     "card": {
@@ -155,6 +162,9 @@
       "lostFollowing": "Lost {count} following",
       "noHistory": "No import history available",
       "description": "Track your Instagram growth over time by importing your data regularly"
+    },
+    "info": {
+      "usernameChange": "Note: If someone changed their Instagram username since your last import, they may appear as both a new follower and an unfollower."
     }
   },
   "faq": {

@@ -91,12 +91,17 @@ const saveToLocalStorage = () => {
 
   // Compute newFollowers by comparing to previous import (if available)
   let newFollowersArr: InstagramUser[] = []
+  let lostFollowersArr: InstagramUser[] = []
   if (prevFollowers.length > 0) {
     newFollowersArr = instagramData.value.followers.filter(
       currentFollower => !prevFollowers.some(prevFollower => prevFollower.username === currentFollower.username)
     )
+    lostFollowersArr = prevFollowers.filter(
+      prevFollower => !instagramData.value.followers.some(currentFollower => currentFollower.username === prevFollower.username)
+    )
   } else {
     newFollowersArr = []
+    lostFollowersArr = []
   }
 
   // Prepare new import (with full lists)
@@ -104,7 +109,8 @@ const saveToLocalStorage = () => {
     data: { ...instagramData.value },
     timestamp: new Date().toISOString(),
     changes: lastParsedData.value?.changes,
-    newFollowers: newFollowersArr
+    newFollowers: newFollowersArr,
+    lostFollowers: lostFollowersArr
   }
 
   // Add new import to history (at the start)
@@ -120,9 +126,12 @@ const saveToLocalStorage = () => {
       followers: [],
       following: []
     }
-    // Remove newFollowers from previous imports to save space
+    // Remove newFollowers and lostFollowers from previous imports to save space
     if ('newFollowers' in entry) {
       delete entry.newFollowers
+    }
+    if ('lostFollowers' in entry) {
+      delete entry.lostFollowers
     }
   }
 

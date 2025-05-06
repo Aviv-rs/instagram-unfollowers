@@ -47,6 +47,13 @@
           >
             {{ $t('results.tabs.newFollowers') }}
           </button>
+          <button 
+            class="tab-button" 
+            :class="{ 'active': activeTab === 'newUnfollowers' }"
+            @click="$emit('setActiveTab', 'newUnfollowers')"
+          >
+            {{ $t('results.tabs.newUnfollowers') }}
+          </button>
         </div>
         
         <div class="results-tabs-content">
@@ -185,6 +192,9 @@
           
           <!-- New Followers Tab -->
           <div v-if="activeTab === 'newFollowers'" class="tab-content">
+            <div class="info-note">
+              {{$t('results.info.usernameChange')}}
+            </div>
             <div v-if="props.previousData" class="new-followers-section">
               <div class="comparison-stats">
                 <div class="stat-card">
@@ -270,6 +280,33 @@
               </p>
             </div>
           </div>
+          
+          <!-- New Unfollowers Tab -->
+          <div v-if="activeTab === 'newUnfollowers'" class="tab-content">
+            <div class="info-note">
+              {{$t('results.info.usernameChange')}}
+            </div>
+            <div v-if="newUnfollowers.length > 0" class="unfollowers-grid">
+              <UnfollowerCard 
+                v-for="user in paginatedNewUnfollowers" 
+                :key="user.username" 
+                :user="user" 
+              />
+            </div>
+            <div v-else class="empty-state">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="16"></line>
+                  <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+              </div>
+              <h3 class="empty-title">{{ $t('results.empty.newUnfollowers.title') }}</h3>
+              <p class="empty-description">
+                {{ $t('results.empty.newUnfollowers.description') }}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -331,7 +368,7 @@ const props = defineProps<{
   instagramData: InstagramData
   youDontFollowBack: Unfollower[]
   notFollowingBack: Unfollower[]
-  activeTab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers'
+  activeTab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers' | 'newUnfollowers'
   previousData?: InstagramData | null
   importHistory?: ImportHistoryEntry[]
 }>()
@@ -397,6 +434,19 @@ const totalNewFollowersPages = computed(() => {
   return Math.ceil(newFollowers.value.length / ITEMS_PER_PAGE)
 })
 
+const newUnfollowers = computed(() => {
+  if (props.importHistory && props.importHistory.length > 0 && props.importHistory[0].lostFollowers) {
+    return props.importHistory[0].lostFollowers
+  }
+  return []
+})
+
+const paginatedNewUnfollowers = computed(() => {
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  const end = start + ITEMS_PER_PAGE
+  return newUnfollowers.value.slice(start, end)
+})
+
 const formatImportDate = (timestamp: string) => {
   const date = new Date(timestamp)
   return new Intl.DateTimeFormat(i18n.global.locale.value, {
@@ -421,7 +471,7 @@ watch(() => props.activeTab, () => {
 })
 
 defineEmits<{
-  (e: 'setActiveTab', tab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers'): void
+  (e: 'setActiveTab', tab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers' | 'newUnfollowers'): void
 }>()
 </script>
 
@@ -706,5 +756,15 @@ defineEmits<{
   color: #ff4136;
   font-weight: 600;
   display: inline-block;
+}
+
+.info-note {
+  background: var(--main-1);
+  color: var(--main-7);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--main-3);
 }
 </style>

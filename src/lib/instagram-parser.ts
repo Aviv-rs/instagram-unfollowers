@@ -115,30 +115,6 @@ export async function parseInstagramData(
 }
 
 /**
- * Merges two arrays of users, keeping the most recent data for each user
- */
-function mergeUsers(existingUsers: InstagramUser[], newUsers: InstagramUser[]): InstagramUser[] {
-  const userMap = new Map<string, InstagramUser>()
-  
-  // Add existing users to map
-  existingUsers.forEach(user => {
-    userMap.set(user.username, user)
-  })
-  
-  // Update or add new users
-  newUsers.forEach(user => {
-    const existingUser = userMap.get(user.username)
-    
-    // If user doesn't exist in map or new user has more recent data, update the map
-    if (!existingUser || (user.timestamp && existingUser.timestamp && user.timestamp > existingUser.timestamp)) {
-      userMap.set(user.username, user)
-    }
-  })
-  
-  return Array.from(userMap.values())
-}
-
-/**
  * Parses a list of Instagram users from the relationships data
  */
 function parseUsersList(relationships: InstagramRelationshipEntry[]): InstagramUser[] {
