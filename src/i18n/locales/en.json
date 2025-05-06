@@ -162,7 +162,7 @@
     "questions": [
       {
         "question": "How do I get my Instagram data file?",
-        "answer": "Go to your Instagram profile, tap the three lines in the top right, select 'Your activity', then 'Download your information'. Request a download in JSON format. Instagram will email you when it's ready to download."
+        "answer": "Follow the <a href=\"#upload-section\">instructions in the upload section</a>."
       },
       {
         "question": "Is my data secure when using this tool?",

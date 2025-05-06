@@ -7,7 +7,7 @@
       
       <div class="faq-container">
         <div 
-          v-for="(faq, index) in $tm('faq.questions')" 
+          v-for="(faq, index) in faqs" 
           :key="index" 
           class="faq-item"
           :class="{ 'active': activeIndex === index }"
@@ -35,13 +35,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+// Define the FAQ item type
+interface FaqItem {
+  question: string
+  answer: string
+}
+
 const { tm } = useI18n()
+
+// Use a computed property to get the FAQs with the correct type
+const faqs = computed(() => tm('faq.questions') as FaqItem[])
+
 const activeIndex = ref<number | null>(null)
 const answerRefs = ref<HTMLElement[]>([])
-const faqHeights = ref<number[]>(Array(tm('faq.questions').length).fill(0))
+const faqHeights = ref<number[]>([])
 
 const toggleFaq = (index: number) => {
   activeIndex.value = activeIndex.value === index ? null : index
@@ -49,10 +59,13 @@ const toggleFaq = (index: number) => {
 
 onMounted(async () => {
   await nextTick()
-  
+
+  // Initialize faqHeights array with the correct length
+  faqHeights.value = Array(faqs.value.length).fill(0)
+
   // Get heights of all answer content
   const elements = answerRefs.value
-  
+
   if (elements && elements.length > 0) {
     elements.forEach((el, index) => {
       if (el) {
@@ -132,6 +145,7 @@ onMounted(async () => {
 .faq-answer-content {
   padding: 0 var(--spacing-lg) var(--spacing-lg);
   color: var(--text-secondary);
+  padding-top: var(--spacing-md);
   
   p {
     margin-bottom: var(--spacing-md);
