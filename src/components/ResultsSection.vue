@@ -6,13 +6,29 @@
       </h2>
       
       <div class="stats-overview">
-        <div class="stat-card">
+        <div class="stat-card stat-card-followers">
           <div class="stat-value">{{ instagramData.followersCount }}</div>
           <div class="stat-label">{{ $t('results.stats.followers') }}</div>
+          <template v-if="importHistory && importHistory.length > 1">
+            <span v-if="importHistory[0].newFollowers && importHistory[0].newFollowers.length > 0" class="stat-diff stat-diff-green">
+              +{{ getCountDiff(0, 'followers') }}
+            </span>
+            <span v-if="importHistory[0].lostFollowers && importHistory[0].lostFollowers.length > 0" class="stat-diff stat-diff-red">
+              -{{ getCountDiff(0, 'followers') }}
+            </span>
+          </template>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-following">
           <div class="stat-value">{{ instagramData.followingCount }}</div>
           <div class="stat-label">{{ $t('results.stats.following') }}</div>
+          <template v-if="importHistory && importHistory.length > 1">
+            <span v-if="getCountDiff(0, 'following') > 0" class="stat-diff stat-diff-green">
+              {{ getCountDiff(0, 'following') }}
+            </span>
+            <span v-if="getCountDiff(0, 'following') < 0" class="stat-diff stat-diff-red">
+              {{ getCountDiff(0, 'following') }}
+            </span>
+          </template>
         </div>
         <div class="stat-card">
           <div class="stat-value">{{ youDontFollowBack.length }}</div>
@@ -195,18 +211,7 @@
             <div class="info-note">
               {{$t('results.info.usernameChange')}}
             </div>
-            <div v-if="props.previousData" class="new-followers-section">
-              <div class="comparison-stats">
-                <div class="stat-card">
-                  <div class="stat-value">{{ props.instagramData.followersCount - props.previousData.followersCount }}</div>
-                  <div class="stat-label">{{ $t('results.stats.newFollowers') }}</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-value">{{ props.instagramData.followingCount - props.previousData.followingCount }}</div>
-                  <div class="stat-label">{{ $t('results.stats.newFollowing') }}</div>
-                </div>
-              </div>
-              
+            <div v-if="props.previousData">
               <div v-if="newFollowers.length > 0" class="pagination pagination-top">
                 <button 
                   class="pagination-button" 
@@ -462,6 +467,7 @@ const getCountDiff = (index: number, type: 'followers' | 'following') => {
   if (type === 'followers') {
     return current.followersCount - prev.followersCount;
   } else {
+    console.log(current.followingCount - prev.followingCount)
     return current.followingCount - prev.followingCount;
   }
 };
@@ -497,6 +503,7 @@ defineEmits<{
 }
 
 .stat-card {
+  position: relative;
   background-color: var(--main-0);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
@@ -522,6 +529,39 @@ defineEmits<{
   font-size: var(--font-size-md);
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.stat-diff {
+  position: absolute;
+  font-size: 0.95em;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  top: 10px;
+  z-index: 2;
+  direction: ltr;
+}
+
+.stat-card-followers .stat-diff-green {
+  right: 10px;
+  background: #eafaf1;
+  color: #2ecc40;
+}
+.stat-card-followers .stat-diff-red {
+  left: 10px;
+  background: #fff0f0;
+  color: #ff4136;
+}
+
+.stat-card-following .stat-diff-green {
+  right: 10px;
+  background: #eafaf1;
+  color: #2ecc40;
+}
+.stat-card-following .stat-diff-red {
+  left: 10px;
+  background: #fff0f0;
+  color: #ff4136;
 }
 
 .results-tabs {
