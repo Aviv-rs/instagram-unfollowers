@@ -38,6 +38,38 @@ const changeLocale = (newLocale: string) => {
   document.documentElement.lang = newLocale
   document.documentElement.dir = newLocale === 'he' ? 'rtl' : 'ltr'
   localStorage.setItem('language', newLocale)
+  if (typeof window !== 'undefined') {
+    window.nl_lang = newLocale
+    reloadAccessibilityWidget()
+  }
+}
+
+const reloadAccessibilityWidget = () => {
+  // Remove the old script
+  const oldScript = document.querySelector('script[src*="nagishli.js"]');
+  if (oldScript) oldScript.remove();
+
+  // Remove the old widget UI (adjust selector as needed)
+  const nagishliRoot = document.getElementById('NagishLiTag');
+  if (nagishliRoot) nagishliRoot.remove();
+
+  // You may need to remove other elements/classes if the widget uses them
+  // document.querySelectorAll('.nagishli-widget').forEach(el => el.remove());
+
+  // Add the script again
+  const script = document.createElement('script');
+  script.src = "https://aviv-rs.github.io/instagram-unfollowers/accessibility/nagishli.js?v=2.3";
+  script.charset = "utf-8";
+  script.defer = true;
+  document.body.appendChild(script);
+};
+
+// Add this to declare nl_lang on the Window type
+// @ts-ignore
+declare global {
+  interface Window {
+    nl_lang?: string;
+  }
 }
 </script>
 

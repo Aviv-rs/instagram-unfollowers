@@ -615,7 +615,7 @@ const resetUpload = () => {
 }
 
 .instructions-list {
-  padding-left: var(--spacing-lg);
+  padding-inline-start: var(--spacing-lg);
   
   li {
     margin-bottom: var(--spacing-xs);
