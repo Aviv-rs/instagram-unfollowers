@@ -54,7 +54,7 @@ import ResultsSection from '@/components/ResultsSection.vue'
 import FAQSection from '@/components/FAQSection.vue'
 import About from '@/components/About.vue'
 import { parseInstagramData, processZipFile } from '@/lib/instagram-parser'
-import type { FileUploadState, InstagramData, Unfollower, UploadFileType, ImportHistoryEntry, ParsedInstagramData } from '@/types/instagram'
+import type { FileUploadState, InstagramData, Unfollower, UploadFileType, ImportHistoryEntry, ParsedInstagramData, InstagramUser } from '@/types/instagram'
 
 // State management
 const fileUploadState = ref<FileUploadState>('idle')
@@ -83,20 +83,49 @@ const importHistory = ref<ImportHistoryEntry[]>([])
 
 // Save data to localStorage
 const saveToLocalStorage = () => {
-  const newImport: ImportHistoryEntry = {
-    data: instagramData.value,
-    timestamp: new Date().toISOString(),
-    changes: lastParsedData.value?.changes
+  // Get previous followers list BEFORE adding the new import
+  let prevFollowers: InstagramUser[] = []
+  if (importHistory.value.length > 0 && importHistory.value[0].data.followers && importHistory.value[0].data.followers.length > 0) {
+    prevFollowers = importHistory.value[0].data.followers
   }
-  
-  // Add new import to history
-  importHistory.value.push(newImport)
-  
-  // Sort history by timestamp (newest first)
-  importHistory.value.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  )
-  
+
+  // Compute newFollowers by comparing to previous import (if available)
+  let newFollowersArr: InstagramUser[] = []
+  if (prevFollowers.length > 0) {
+    newFollowersArr = instagramData.value.followers.filter(
+      currentFollower => !prevFollowers.some(prevFollower => prevFollower.username === currentFollower.username)
+    )
+  } else {
+    newFollowersArr = []
+  }
+
+  // Prepare new import (with full lists)
+  const newImport: ImportHistoryEntry = {
+    data: { ...instagramData.value },
+    timestamp: new Date().toISOString(),
+    changes: lastParsedData.value?.changes,
+    newFollowers: newFollowersArr
+  }
+
+  // Add new import to history (at the start)
+  importHistory.value.unshift(newImport)
+
+  // Only keep the latest import with full lists, trim older ones
+  for (let i = 1; i < importHistory.value.length; i++) {
+    const entry = importHistory.value[i]
+    // Remove followers/following arrays, keep only counts
+    entry.data = {
+      followersCount: entry.data.followersCount,
+      followingCount: entry.data.followingCount,
+      followers: [],
+      following: []
+    }
+    // Remove newFollowers from previous imports to save space
+    if ('newFollowers' in entry) {
+      delete entry.newFollowers
+    }
+  }
+
   // Save complete history
   const dataToSave = {
     importHistory: importHistory.value,
@@ -106,7 +135,7 @@ const saveToLocalStorage = () => {
       notFollowingBack: notFollowingBack.value
     }
   }
-  
+
   localStorage.setItem('instagramData', JSON.stringify(dataToSave))
 }
 
@@ -116,12 +145,12 @@ const loadFromLocalStorage = () => {
   if (savedData) {
     try {
       const parsedData = JSON.parse(savedData)
-      
+
       // Restore import history
       if (parsedData.importHistory) {
         importHistory.value = parsedData.importHistory
       }
-      
+
       // Restore current state
       if (parsedData.currentData) {
         instagramData.value = parsedData.currentData.instagramData
@@ -129,12 +158,18 @@ const loadFromLocalStorage = () => {
         notFollowingBack.value = parsedData.currentData.notFollowingBack
         fileUploadState.value = 'complete'
       }
-      
+
       // Set previous data to the last import if available
       if (importHistory.value.length > 1) {
-        previousData.value = importHistory.value[1].data // Get second most recent import
+        // previousData will only have counts, not full lists
+        previousData.value = {
+          followersCount: importHistory.value[1].data.followersCount,
+          followingCount: importHistory.value[1].data.followingCount,
+          followers: [],
+          following: []
+        }
       }
-      
+
       console.log('Successfully loaded saved data from localStorage')
     } catch (err) {
       console.error('Error loading saved data:', err)

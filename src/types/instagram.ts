@@ -28,6 +28,7 @@ export interface ImportHistoryEntry {
   data: InstagramData;
   timestamp: string;
   changes?: ImportChange;
+  newFollowers?: InstagramUser[];
 }
 
 export type FileUploadState = 'idle' | 'uploading' | 'processing' | 'complete' | 'error'

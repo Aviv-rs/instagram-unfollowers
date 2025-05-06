@@ -197,12 +197,50 @@
                 </div>
               </div>
               
+              <div v-if="newFollowers.length > 0" class="pagination pagination-top">
+                <button 
+                  class="pagination-button" 
+                  :disabled="currentPage === 1"
+                  @click="handlePageChange(currentPage - 1)"
+                >
+                  {{ $t('pagination.previous') }}
+                </button>
+                <span class="pagination-info">
+                  {{ $t('pagination.page', { current: currentPage, total: totalNewFollowersPages }) }}
+                </span>
+                <button 
+                  class="pagination-button" 
+                  :disabled="currentPage === totalNewFollowersPages"
+                  @click="handlePageChange(currentPage + 1)"
+                >
+                  {{ $t('pagination.next') }}
+                </button>
+              </div>
               <div v-if="newFollowers.length > 0" class="unfollowers-grid">
                 <UnfollowerCard 
-                  v-for="user in newFollowers" 
+                  v-for="user in paginatedNewFollowers" 
                   :key="user.username" 
                   :user="user" 
                 />
+              </div>
+              <div v-if="newFollowers.length > 0" class="pagination pagination-bottom">
+                <button 
+                  class="pagination-button" 
+                  :disabled="currentPage === 1"
+                  @click="handlePageChange(currentPage - 1)"
+                >
+                  {{ $t('pagination.previous') }}
+                </button>
+                <span class="pagination-info">
+                  {{ $t('pagination.page', { current: currentPage, total: totalNewFollowersPages }) }}
+                </span>
+                <button 
+                  class="pagination-button" 
+                  :disabled="currentPage === totalNewFollowersPages"
+                  @click="handlePageChange(currentPage + 1)"
+                >
+                  {{ $t('pagination.next') }}
+                </button>
               </div>
               <div v-else class="empty-state">
                 <div class="empty-icon">
@@ -245,8 +283,18 @@
           >
             <div class="import-date">{{ formatImportDate(import_.timestamp) }}</div>
             <div class="import-stats">
-              <span>{{ $t('results.stats.followers') }}: {{ import_.data.followersCount }}</span>
-              <span>{{ $t('results.stats.following') }}: {{ import_.data.followingCount }}</span>
+              <span>
+                {{ $t('results.stats.followers') }}: {{ import_.data.followersCount }}
+                <span class="ltr" v-if="getCountDiff(index, 'followers') !== 0" :class="{'gained': getCountDiff(index, 'followers') > 0, 'lost': getCountDiff(index, 'followers') < 0}">
+                  ({{ getCountDiff(index, 'followers') > 0 ? '+' : '' }}{{ getCountDiff(index, 'followers') }})
+                </span>
+              </span>
+              <span>
+                {{ $t('results.stats.following') }}: {{ import_.data.followingCount }}
+                <span class="ltr" v-if="getCountDiff(index, 'following') !== 0" :class="{'gained': getCountDiff(index, 'following') > 0, 'lost': getCountDiff(index, 'following') < 0}">
+                  ({{ getCountDiff(index, 'following') > 0 ? '+' : '' }}{{ getCountDiff(index, 'following') }})
+                </span>
+              </span>
               <span v-if="import_.changes" class="import-changes">
                 <template v-if="import_.changes.gainedFollowers.length > 0">
                   {{ $t('results.importHistory.gainedFollowers', { count: import_.changes.gainedFollowers.length }) }}
@@ -272,8 +320,7 @@
 <script setup lang="ts">
 import UnfollowerCard from '@/components/UnfollowerCard.vue'
 import type { InstagramData, Unfollower, ImportHistoryEntry } from '@/types/instagram'
-import { ref, computed } from 'vue'
-import { formatTimestamp } from '@/lib/instagram-parser'
+import { ref, computed, watch } from 'vue'
 import i18n from '@/i18n'
 
 const ITEMS_PER_PAGE = 12
@@ -333,19 +380,21 @@ const handlePageChange = (page: number) => {
 }
 
 const newFollowers = computed(() => {
-  if (!props.previousData) return []
-  
-  return props.instagramData.followers
-    .filter(
-      currentFollower => !props.previousData?.followers.some(
-        prevFollower => prevFollower.username === currentFollower.username
-      )
-    )
-    .map(user => ({
-      ...user,
-      unfollowedTime: formatTimestamp(Date.now() / 1000),
-      followDuration: 'New follower'
-    }))
+  if (props.importHistory && props.importHistory.length > 0 && props.importHistory[0].newFollowers) {
+    return props.importHistory[0].newFollowers
+  }
+  return []
+})
+
+const paginatedNewFollowers = computed(() => {
+  console.log(newFollowers.value)
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  const end = start + ITEMS_PER_PAGE
+  return newFollowers.value.slice(start, end)
+})
+
+const totalNewFollowersPages = computed(() => {
+  return Math.ceil(newFollowers.value.length / ITEMS_PER_PAGE)
 })
 
 const formatImportDate = (timestamp: string) => {
@@ -355,6 +404,21 @@ const formatImportDate = (timestamp: string) => {
     timeStyle: 'short'
   }).format(date)
 }
+
+const getCountDiff = (index: number, type: 'followers' | 'following') => {
+  if (!props.importHistory || index === props.importHistory.length - 1) return 0;
+  const current = props.importHistory[index].data;
+  const prev = props.importHistory[index + 1].data;
+  if (type === 'followers') {
+    return current.followersCount - prev.followersCount;
+  } else {
+    return current.followingCount - prev.followingCount;
+  }
+};
+
+watch(() => props.activeTab, () => {
+  currentPage.value = 1
+})
 
 defineEmits<{
   (e: 'setActiveTab', tab: 'youDontFollowBack' | 'notFollowingBack' | 'newFollowers'): void
@@ -631,5 +695,16 @@ defineEmits<{
   &.negative {
     color: var(--error);
   }
+}
+
+.gained {
+  color: #2ecc40;
+  font-weight: 600;
+  display: inline-block;
+}
+.lost {
+  color: #ff4136;
+  font-weight: 600;
+  display: inline-block;
 }
 </style>
